@@ -48,7 +48,7 @@
     <div class="container">
       <section id="main_content">
         <article>
-  <h2>The Most Fun (and maybe impractical) Command and Control: SpotifyC2</h2>
+  <h1>The Most Fun (and maybe impractical) Command and Control: SpotifyC2</h1>
   <time datetime="2019-12-22T00:00:00+00:00" class="by-line">22 Dec 2019</time>
   <p>Command and Control is one of the most common techniques used by attackers to maintain persistent contorl over an infected computer, sending commands to be executed and recieving the output of those commands. There exists many different methods for implementing Command and Control, from using cloud services (AWS, Azure, etc.) to even using social media to send commands. One method we will be exploring is one I haven’t seen before (probably for a good reason): using Spotify to send commands and recieve output.</p>
 
@@ -74,6 +74,10 @@
 
 <p>The acrostic generated is also randomized, so repeating characters will not have repeating songs. Once the acrostic is generated, a playlist is created with a name of your choice. For my PoC, the name of the playlist does not matter, but it could be used to organize commands, or even correspond to times at which the command should be run on the infected machine (might add that feature later). The playlist will contain all the songs from the acrostic. However, an issue I ran into was certain genres of the song database wouldn’t generate the exact acrostic correctly, occasionally adding or replacing characters that shouldn’t be there. I didn’t test this on all genres (jazz and country were the ones I noticed the issue with), but the rock genre never gave me any issues, so I’d reccommend that until I figure out what the issue is.</p>
 
+<p>Below shows a playlist created from the command “cat /etc/passwd”. You can see the beginning of the command hidden in the acrostic:</p>
+
+<p><img src="/assets/2019-12-22-SpotifyC2/1.png" alt="" height="435px" width="666px" style="display: block; margin-left: auto; margin-right: auto;" /></p>
+
 <p>Once the playlist is created, the playlist ID and command is placed in a file (playlist_id_list.txt) on your local machine, which is to be used later when retrieving the output from the infected machine.</p>
 
 <p>In my PoC, the script that does all this is <a href="https://github.com/JohnWoodman/SpotifyC2/blob/master/genAcrostic.py">genAcrostic.py</a></p>
@@ -82,13 +86,23 @@
 
 <p>This part describes everything that the infected machine is doing to recieve and execute the command as well as send back the command output. The backdoor beacons out periodically (the less freqeunt, the more stealhty), making a request to the Spotify API to list all of its current playlists. Each playlist contains a command, hidden in an acrostic built from the songs in the playlist. The backdoor gets the first letter of each song, decodes the special characters and numbers as needed, and formulates a command to be executed.</p>
 
-<p>Initially, I was going to have the output of the command encoded in an acrostic just as I did when sending the command, but I realized that there were a lot more special characters and keys, which would make the acrostic overly and unnecessarily complex. While looking through the Spotify app to see if there were any other ways, I noticed that each playlist has a description box. I decided that it made much more sense to send the base64 encoded output through there. However, the description box has a size limit of 300 characters, too short for the majority of the base64 encoded output. A fix I came up with was to split the base64 encoded output into 300 character pieces, placing the first piece in the description of the original command’s playlist. The subsequent 300 character pieces are then placed into newly created playlists until the entire output is used. In order for the attacker machine to re-assemble the base64 encoded output, the name of each of the newly created playlists are based off the playlist ID of original command’s playlist, with an incrementing number added to the end.</p>
+<p>Initially, I was going to have the output of the command encoded in an acrostic just as I did when sending the command, but I realized that there were a lot more special characters and keys, which would make the acrostic overly and unnecessarily complex. While looking through the Spotify app to see if there were any other ways, I noticed that each playlist has a description box. I decided that it made much more sense to send the base64 encoded output through there.</p>
+
+<p>However, the description box has a size limit of 300 characters, too short for the majority of the base64 encoded output. A fix I came up with was to split the base64 encoded output into 300 character pieces, placing the first piece in the description of the original command’s playlist. The subsequent 300 character pieces are then placed into newly created playlists until the entire output is used. In order for the attacker machine to re-assemble the base64 encoded output, the name of each of the newly created playlists are based off the playlist ID of original command’s playlist, with an incrementing number added to the end.</p>
+
+<p>Below shows a playlist created by the backdoor. A piece of the base64 encoded output is embedded in the description, and the name of the playlist reflects the playlist ID of the original command acrsotic, with an incrementing number added as the suffix (the image shows the 29th playlist created for this output). On the left are the list of the other playlists created, each containing a piece of the output to be re-assembled and decoded:</p>
+
+<p><img src="/assets/2019-12-22-SpotifyC2/2.png" alt="" height="354px" width="671px" style="display: block; margin-left: auto; margin-right: auto;" /></p>
 
 <p>In my Poc, the script that does all this is <a href="https://github.com/JohnWoodman/SpotifyC2/blob/master/backdoor.py">backdoor.py</a></p>
 
 <h3 id="retrieving-output"><a href="#header-5"></a>Retrieving Output</h3>
 
 <p>Retrieving the output from the command is fairly straight forward. A request is made to the Spotify API to retrieve a list of all the playlists, which now contain the newly created ones from the backdoor. The description is retrieved from each of the playlists, and based off the incrementing number at the end of each playlist ID, the base64 encoded text is re-assembled in the proper order, and is then decoded to output of the command. Since multiple commands can be sent to the backdoor, in order to correspond an output to a specific command, the file “playlist_id_list.txt” is used to relate a playlist ID with its command. Once all the command outputs are retrieved and decoded, the “playlist_id_list.txt” file is deleted, as well as the Spotify playlists themselves.</p>
+
+<p>As shown below, once this process is complete, the playlists associated with the command and its output is deleted:</p>
+
+<p><img src="/assets/2019-12-22-SpotifyC2/3.png" alt="" height="348px" width="533px" style="display: block; margin-left: auto; margin-right: auto;" /></p>
 
 <p>In my PoC, the script that does all this is <a href="https://github.com/JohnWoodman/SpotifyC2/blob/master/getOutput.py">getOutput.py</a></p>
 
@@ -100,6 +114,7 @@
 
 
 </article>
+
       </section>
     </div>
   </div>
