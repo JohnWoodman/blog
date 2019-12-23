@@ -34,3 +34,4 @@ owner : "John Woodman"
 year : "2019"
 exclude: ["build_prod.sh"]
 include: ['.htaccess']
+google_analytics: "UA-154967710-1" 

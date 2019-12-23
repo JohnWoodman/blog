@@ -13,7 +13,7 @@
     
       <item>
         <title>The Most Fun (and maybe impractical) Command and Control: SpotifyC2</title>
-        <description>&lt;p&gt;Command and Control is one of the most common techniques used by attackers to maintain persistent contorl over an infected computer, sending commands to be executed and recieving the output of those commands. There exists many different methods for implementing Command and Control, from using cloud services (AWS, Azure, etc.) to even using social media to send commands. One method we will be exploring is one I haven’t seen before (probably for a good reason): using Spotify to send commands and recieve output.&lt;/p&gt;
+        <description>&lt;p&gt;Command and Control is one of the most common techniques used by attackers to maintain persistent control over an infected computer, sending commands to be executed and receiving the output of those commands. There exists many different methods for implementing Command and Control, from using cloud services (AWS, Azure, etc.) to even using social media to send commands. One method we will be exploring is one I haven’t seen before (probably for a good reason): using Spotify to send commands and receive output.&lt;/p&gt;
 
 &lt;h2 id=&quot;introduction&quot;&gt;&lt;a href=&quot;#header-1&quot;&gt;&lt;/a&gt;Introduction&lt;/h2&gt;
 
@@ -47,7 +47,7 @@
 
 &lt;h3 id=&quot;the-backdoor&quot;&gt;&lt;a href=&quot;#header-4&quot;&gt;&lt;/a&gt;The Backdoor&lt;/h3&gt;
 
-&lt;p&gt;This part describes everything that the infected machine is doing to recieve and execute the command as well as send back the command output. The backdoor beacons out periodically (the less freqeunt, the more stealhty), making a request to the Spotify API to list all of its current playlists. Each playlist contains a command, hidden in an acrostic built from the songs in the playlist. The backdoor gets the first letter of each song, decodes the special characters and numbers as needed, and formulates a command to be executed.&lt;/p&gt;
+&lt;p&gt;This part describes everything that the infected machine is doing to receive and execute the command as well as send back the command output. The backdoor beacons out periodically (the less freqeunt, the more stealhty), making a request to the Spotify API to list all of its current playlists. Each playlist contains a command, hidden in an acrostic built from the songs in the playlist. The backdoor gets the first letter of each song, decodes the special characters and numbers as needed, and formulates a command to be executed.&lt;/p&gt;
 
 &lt;p&gt;Initially, I was going to have the output of the command encoded in an acrostic just as I did when sending the command, but I realized that there were a lot more special characters and keys, which would make the acrostic overly and unnecessarily complex. While looking through the Spotify app to see if there were any other ways, I noticed that each playlist has a description box. I decided that it made much more sense to send the base64 encoded output through there.&lt;/p&gt;
 
