@@ -1,0 +1,2 @@
+ErrorDocument 404 /404/
+redirectMatch 301 ^/posts/?$ /
