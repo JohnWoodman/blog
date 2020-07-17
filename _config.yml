@@ -12,8 +12,8 @@ baseurl: /
 source: .
 destination: ./_site
 permalink: /:categories/:title/
-paginate: 3
-paginate_path: /page/:num/
+#paginate: 3
+#paginate_path: /page/:num/
 
 defaults:
   -
@@ -28,6 +28,18 @@ plugins:
   - jekyll-seo-tag
   - jekyll-paginate
   - jekyll-sitemap
+  - jekyll-paginate-multiple
+
+paginate_multiple:
+  - paginate: 3
+    paginate_path: '/page:num/'
+    sub_dir: '/research'
+  - paginate: 3
+    paginate_path: '/hackthebox/page:num/'
+    sub_dir: '/hackthebox'
+  - paginate: 3
+    paginate_path: '/ctf/page:num/'
+    sub_dir: '/ctf'
 
 # Custom variables
 owner : "John Woodman"

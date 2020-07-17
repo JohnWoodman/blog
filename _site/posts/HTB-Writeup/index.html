@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <meta name="generator" content="Jekyll">
+
+  <title>HackTheBox&#58; Writeup</title>
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="ATOM Feed" /> <!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>HackTheBox: Writeup | John Woodman’s Security Blog</title>
+<meta name="generator" content="Jekyll v3.8.6" />
+<meta property="og:title" content="HackTheBox: Writeup" />
+<meta name="author" content="John Woodman" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Box Type: Linux Getting User Nmap scan showed ports 22 and 80 open." />
+<meta property="og:description" content="Box Type: Linux Getting User Nmap scan showed ports 22 and 80 open." />
+<meta property="og:site_name" content="John Woodman’s Security Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-05-23T00:00:00+00:00" />
+<script type="application/ld+json">
+{"@type":"BlogPosting","headline":"HackTheBox: Writeup","dateModified":"2020-05-23T00:00:00+00:00","datePublished":"2020-05-23T00:00:00+00:00","url":"/posts/HTB-Writeup/","mainEntityOfPage":{"@type":"WebPage","@id":"/posts/HTB-Writeup/"},"author":{"@type":"Person","name":"John Woodman"},"description":"Box Type: Linux Getting User Nmap scan showed ports 22 and 80 open.","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+
+
+<body>
+  <div id="wrapper">
+    <header>
+  <div>
+    <a href="/">
+    
+    <h1>john@home:~$</h1>
+    </a>
+    <div class="header-links">
+      <a href="/archive"><h2 class="header-link">Archive</h2></a>
+<a href="/about"><h2 class="header-link">About</h2></a>
+<a href="/hackthebox"><h2 class="header-link">HackTheBox</h2></a>
+<a href="/ctf"><h2 class="header-link">CTF</h2></a>
+<a href="/atom.xml"><h2 class="header-link">RSS</h2></a>
+<a href="https://twitter.com/JohnWoodman15"><h2 class="header-link"><img src="/assets/twitter.png" style="vertical-align:middle" width="45"/></h2></a>
+<a href="https://github.com/JohnWoodman"><h2 class="header-link"><img src="/assets/github.png" style="vertical-align:middle; margin-left:-7px" width="45"/></h2></a>
+
+    </div>
+  </div>
+</header>
+
+    <div class="container">
+      <section id="main_content">
+        <article>
+  <h1>HackTheBox&#58; Writeup</h1>
+  <time datetime="2020-05-23T00:00:00+00:00" class="by-line">23 May 2020</time>
+  <h3 id="box-type-linux"><a href="#header-3"></a>Box Type: Linux</h3>
+<h2 id="getting-user"><a href="#header-1"></a>Getting User</h2>
+<p>Nmap scan showed ports 22 and 80 open.
+<img src="/assets/2020-5-23-HTB-Writeup/Capture.PNG" alt="" height="65%" width="65%" style="display: block; margin-right: auto;" /></p>
+
+<p>Checking out the website shows a notification that some sort of DoS protection is running on the webserver, likely preventing any dictionary or brute force attacks, which means no dirb :(.
+<img src="/assets/2020-5-23-HTB-Writeup/Capture2.PNG" alt="" height="100%" width="100%" style="display: block;  margin-right: auto;" /></p>
+
+<p>The Nmap scan did show a robots.txt, however:
+<img src="/assets/2020-5-23-HTB-Writeup/Capture3.PNG" alt="" height="60%" width="60%px" style="display: block;  margin-right: auto;" /></p>
+
+<p>Navigating to /writeup shows a home page with writeups for other retired boxes:
+<img src="/assets/2020-5-23-HTB-Writeup/Capture4.PNG" alt="" height="90%" width="90%" style="display: block;  margin-right: auto;" /></p>
+
+<p>Using wappalyzer, it showed that this webpage was running “CMS Made Simple”. Wappalyzer is a useful extension (available for chrome and firefox) which shows what various services, languages, operating system the current website is running.
+<img src="/assets/2020-5-23-HTB-Writeup/Capture5.PNG" alt="" height="60%" width="60%" style="display: block;  margin-right: auto;" /></p>
+
+<p>A bit of googling on “CMS Made Simple” showed an <a href="https://www.exploit-db.com/exploits/46635">SQL Injection vulnerability</a>, specifically a blind, time-based injection. Essentially what this means is that we don’t recieve any direct output from the injection (blind), so we have to use sleep functionality (time-based) in SQL along with the substring function to determine the trueness of each guess. Through this, we are able to determine valuable information stored on the machine’s database, including the Password hash, the salt for the password, the username, and the email related to that user. With this, we can crack the hash using either hashcat or johntheripper and a common wordlist (rockyou.txt), but luckily the exploit found on exploitdb does this all for us. All we have to do is specify the url (http://10.10.10.138/writeup) and the wordlist to use.
+<img src="/assets/2020-5-23-HTB-Writeup/Capture6.PNG" alt="" height="60%" width="60%" style="display: block;  margin-right: auto;" /></p>
+
+<p>We now have the username and password for the user “jkr”. We can SSH in and get the user.txt flag.
+<img src="/assets/2020-5-23-HTB-Writeup/Capture7.PNG" alt="" height="75%" width="75%" style="display: block;  margin-right: auto;" /></p>
+
+<h2 id="getting-root"><a href="#header-2"></a>Getting Root</h2>
+
+<p>A common script I like to run on any linux box is “pspy”, which shows processes and commands being run in real time. This is useful to see if anything weird is being triggered by doing certain tasks. I used scp to transfer the pspy script over and ran it in one tab. I then opened another SSH connection in another tab to start hopefully triggering some events. Luckily, it was quite easy to find the right event to trigger, since actually SSHing into the box triggered some interesting commands.
+<img src="/assets/2020-5-23-HTB-Writeup/Capture8.PNG" alt="" height="100%" width="100%" style="display: block;  margin-right: auto;" /></p>
+
+<p>It’s running a command called “run-parts” but it’s specifying it’s own $PATH environment variable. Well let’s check what groups our user is in and what permissions it has on some of these paths:
+<img src="/assets/2020-5-23-HTB-Writeup/Capture9.PNG" alt="" height="60%" width="60%" style="display: block;  margin-right: auto;" /></p>
+
+<p>As you can see we are in the “staff” group and staff has write permissions on “/usr/local/sbin”, which is the first path specified in the $PATH variable that we saw. Because of this, we can create our own “run-parts” file, have it do whatever we want, place it in /usr/local/sbin and our file will be executed instead of the expected one. This is because Unix will go down the list of the $PATH environment variable until it hits a match. This is what my “run-parts” file looks like:
+<img src="/assets/2020-5-23-HTB-Writeup/Capture12.PNG" alt="" height="60%" width="60%" style="display: block;  margin-right: auto;" /></p>
+
+<p>Through a little troubleshooting of my own, I was able to figure out that the /root directory didn’t have a .ssh directory, which is why I had it make one in my run-parts file. I then copied by public SSH key over into the root’s authorized_keys file and bam, I can now SSH in as root:
+<img src="/assets/2020-5-23-HTB-Writeup/Capture11.PNG" alt="" height="60%" width="60%" style="display: block;  margin-right: auto;" /></p>
+
+<p>Overall, this is a really good beginner box, as it points out some common web attacks and enumerations (checking robots.txt and SQL Injection). The priv esc was also a good starter as it points out a simple, yet common vulnerability, which is allowing paths in $PATH to be writable by unauthorized users.</p>
+
+<p>Hope you enjoyed and learned something :)</p>
+
+</article>
+
+      </section>
+    </div>
+  </div>
+
+   <footer>
+  <a href="https://creativecommons.org/licenses/by-nc/3.0/deed.en_US">
+    <span>
+        <b>John Woodman</b>
+    </span>
+    
+    <span>© 2020</span>
+  </a>
+</footer>
+
+  
+    <script type="text/javascript">
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-154967710-1', 'auto');
+  ga('send', 'pageview');
+</script>
+  
+</body>
+
+</html>

