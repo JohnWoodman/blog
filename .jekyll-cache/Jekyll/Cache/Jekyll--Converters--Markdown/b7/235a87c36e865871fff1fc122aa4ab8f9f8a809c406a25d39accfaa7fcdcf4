@@ -1,0 +1,2 @@
+I"><p>One of the most common methods leveraged by attackers is the use of Malicious Word/Excel Documents sent over email. These malicious docs are embedded with macro VBA code that, when run, execute various tasks on the victim’s computer, usually resulting in RCE (Remote Code Execution) and/or data exfiltration.</p>
+:ET

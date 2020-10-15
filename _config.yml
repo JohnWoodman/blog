@@ -31,15 +31,18 @@ plugins:
   - jekyll-paginate-multiple
 
 paginate_multiple:
-  - paginate: 3
+  - paginate: 100
     paginate_path: '/page:num/'
     sub_dir: '/research'
-  - paginate: 3
+  - paginate: 100
     paginate_path: '/hackthebox/page:num/'
     sub_dir: '/hackthebox'
-  - paginate: 3
+  - paginate: 100
     paginate_path: '/ctf/page:num/'
     sub_dir: '/ctf'
+  - paginate: 100
+    paginate_path: '/gardening/page:num/'
+    sub_dir: '/gardening'
 
 # Custom variables
 owner : "John Woodman"

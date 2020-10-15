@@ -1,0 +1,19 @@
+I"G<p>While taking a Wildlife Issues course at my University, I discovered a high severity vulnerability in the course software our class was using that leads to a horizontal privilege escalation.</p>
+
+<p>“Wildlife Issues in the New Millennium” v18.0.160 is vulnerable to an elevation of privilege vulnerability. During the startup, the application will execute attempt to execute “C:\Course Software Material 18.0.1.9\cmd.exe” if it exists. By default on Windows, low privileged users are able to create folders under the root level drives, including the C: drive. A low privileged user also has the ability to write to “C:\Course Software Material 18.0.1.9". Therefore, a low privileged user can create a malicious “cmd.exe” in that folder, which will be executed every time “Wildlife Issues in the New Millenium” starts by any user on the system. The malicious binary is executed in the background without the user’s knowledge. This would be an example of horizontal privilege escalation, as it will assume the privileges of which ever user starts up the software.</p>
+
+<p>After contacting the vendor, the vulnerability has been patched in the newest version of the course software.</p>
+
+<p>Mitre assigned <a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-26894">CVE-2020-26894</a></p>
+
+<h2 id="steps-to-reproduce"><a href="#header-8"></a>Steps to Reproduce</h2>
+
+<p>Execute the following command in a CMD window:</p>
+
+<p>copy C:\Windows\System32\calc.exe “C:\Course Software Material 18.0.1.9\cmd.exe”</p>
+
+<p>Now open “Wildlife Issues in the New Millennium” and calc will be popped with the same permissions as the user that started it.</p>
+
+<p><img src="/assets/2020-10-06-Privilege-Escalation-Vulnerability-Faulkner-Press/1.png" alt="" height="100%" width="100%" style="display: block;  margin-right: auto;" /></p>
+
+:ET

@@ -1,0 +1,2 @@
+I"<p>Command and Control is one of the most common techniques used by attackers to maintain persistent control over an infected computer, sending commands to be executed and receiving the output of those commands. There exists many different methods for implementing Command and Control, from using cloud services (AWS, Azure, etc.) to even using social media to send commands. One method we will be exploring is one I haven’t seen before (probably for a good reason): using Spotify to send commands and receive output.</p>
+:ET
