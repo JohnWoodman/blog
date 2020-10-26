@@ -12,6 +12,97 @@
     </author>
     
       <item>
+        <title>Week 8&amp;#58; Hydro</title>
+        <description>&lt;h2 id=&quot;upgrades&quot;&gt;&lt;a href=&quot;#header-1&quot;&gt;&lt;/a&gt;Upgrades&lt;/h2&gt;
+&lt;p&gt;This week I built a hydroponic system for my lettuce seedling. I used an empty 2 Liter bottle of sprite, cutting the upper third off with scissors and poking a hole in the bottle cap. I then put cotton wick through the hole in the bottle cap and tied a knot so it wouldn’t fall out. I then added half a liter of water, 3 drops of vinegar, and 1/4 teaspoon of dissolvable fertilizer to the bottom of the bottle. Inside the upper third of the bottle, I added a substrate coco coir and then placed that upper third of the bottle inside the rest of the bottle, allowing the cotton wick to dip into the mixture of water, vinegar, and fertilizer. I then transplanted my lettuce seedling into the substrate and placed it at my window sill. Setting up the system seemed like it would be complicated at first, but was actually quite simple and straight forward. It’s a good thing that I germinated 2 lettuce seedlings, because one of them hasn’t sprouted (probably gonna have to put a new seed in). Below are pictures of my hydroponic system.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2020-10-25-Week-8/1.jpg&quot; alt=&quot;&quot; height=&quot;50%&quot; width=&quot;50%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2020-10-25-Week-8/2.jpg&quot; alt=&quot;&quot; height=&quot;50%&quot; width=&quot;50%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;other-updates&quot;&gt;&lt;a href=&quot;#header-2&quot;&gt;&lt;/a&gt;Other Updates&lt;/h2&gt;
+&lt;p&gt;In other news, my garden is doing really well! The transplanting of the bell pepper and basil seedlings seems to be doing great (knock on wood) and they’re growing quickly. All the other plants are growing fast as well, I can only assume due to the fertilizer I’ve added to each of them. Next week I’ll be working with microgreens, so look forward to that :).&lt;/p&gt;
+</description>
+        <pubDate>Sun, 25 Oct 2020 00:00:00 +0000</pubDate>
+        <link>//posts/Week-8/</link>
+        <link href="/posts/Week-8/"/>
+        <guid isPermaLink="true">/posts/Week-8/</guid>
+      </item>
+    
+      <item>
+        <title>CVE-2020-26894 Privilege Escalation Vulnerability in LiveCode v9.6.1 Programming Language</title>
+        <description>&lt;h1 id=&quot;summary&quot;&gt;&lt;a href=&quot;#header-1&quot;&gt;&lt;/a&gt;Summary&lt;/h1&gt;
+&lt;p&gt;LiveCode v9.6.1 for Windows is vulnerable to a horizontal privilege escalation vulnerability.&lt;/p&gt;
+
+&lt;p&gt;CVE Mitre Assigned: &lt;a href=&quot;https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-26894&quot;&gt;CVE-2020-26894&lt;/a&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;discovery&quot;&gt;&lt;a href=&quot;#header-2&quot;&gt;&lt;/a&gt;Discovery&lt;/h1&gt;
+&lt;p&gt;While taking a Wildlife Issues course at my University, I discovered a high severity vulnerability in the course software our class was using that leads to a horizontal privilege escalation.&lt;/p&gt;
+
+&lt;p&gt;At first, I thought the vulnerability was only in this course software, but looking into it deeper and with the help of one of the developers at faulkner press, we discovered that the vulnerability actually lied in the programming language/framework they were using: LiveCode.&lt;/p&gt;
+
+&lt;p&gt;For those who aren’t familiar, &lt;a href=&quot;https://livecode.com/&quot;&gt;LiveCode&lt;/a&gt; is a high-level scripting language belonging to the family of xTalk scripting languages along side HypderCard’s &lt;a href=&quot;https://en.wikipedia.org/wiki/HyperTalk&quot;&gt;HyperTalk&lt;/a&gt;, allowing you to build cross-platform applications with relative ease.&lt;/p&gt;
+
+&lt;h1 id=&quot;vulnerability&quot;&gt;&lt;a href=&quot;#header-3&quot;&gt;&lt;/a&gt;Vulnerability&lt;/h1&gt;
+&lt;p&gt;LiveCode has a function called “shell()” which, as you would expect, allows you to run shell commands and store its output. Most high-level programming languages that have a similar shell command function will use the environment variable %COMSPEC in Windows to determine the location of the shell to use to run the command, unless otherwise specified by the programmer. For Linux, it will usually use “/bin/sh”.&lt;/p&gt;
+
+&lt;p&gt;LiveCode v9.6.1, however, does not reference %COMSPEC when attempting to locate cmd.exe to run the “shell()” function. This is dangerous, since it means it will follow the &lt;a href=&quot;https://docs.microsoft.com/en-us/previous-versions//cc723564(v=technet.10)#command-search-sequence&quot;&gt;command search sequence&lt;/a&gt;. This will force the application to check the current directory of the application for cmd.exe before checking %PATH.&lt;/p&gt;
+
+&lt;p&gt;This means that if the folder the application is running in is world writable (such as being installed in the root drive), then a low privileged user can create a malicious cmd.exe in that folder, which will be executed every time the application is started by any user on the system, and will assume the privileges of that user. This is known as horizontal privilege escalation.&lt;/p&gt;
+
+&lt;p&gt;After contacting LiveCode, the vulnerability has been patched in LiveCode 9.6.2-rc-1&lt;/p&gt;
+
+&lt;p&gt;Commit: &lt;a href=&quot;https://github.com/livecode/livecode/commit/9bd23b2008a51c9913513c1af014a76a9ff67dbe&quot;&gt;9bd23b2&lt;/a&gt; &amp;amp; &lt;a href=&quot;https://github.com/livecode/livecode-ide/commit/f309d60d2323c08b7d04425be3fef0c805808c5c&quot;&gt;f309d60&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;LiveCode Bug Report: &lt;a href=&quot;https://quality.livecode.com/show_bug.cgi?id=22942&quot;&gt;https://quality.livecode.com/show_bug.cgi?id=22942&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;CVE Mitre Assigned: &lt;a href=&quot;https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-26894&quot;&gt;CVE-2020-26894&lt;/a&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;workaround&quot;&gt;&lt;a href=&quot;#header-4&quot;&gt;&lt;/a&gt;Workaround&lt;/h1&gt;
+&lt;p&gt;For those who need a workaround and can’t update, use the following command to tell the “shell()” function to use C:\Windows\System32\cmd.exe&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;set the shellCommand to &quot;C:\Windows\System32\cmd.exe&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;proof-of-concept&quot;&gt;&lt;a href=&quot;#header-5&quot;&gt;&lt;/a&gt;Proof-of-Concept&lt;/h1&gt;
+
+&lt;p&gt;The following is code that is vulnerable to cmd.exe hijacking:
+&lt;img src=&quot;/assets/2020-10-21-LiveCode-Privilege-Escalation-Vulnerability/1.png&quot; alt=&quot;&quot; height=&quot;100%&quot; width=&quot;100%&quot; style=&quot;display: block; margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;As you can see below, procmon shows that the vulnerable application is attempting to first get “cmd.exe” from the folder the application is running in before using C:\Windows\System32\cmd.exe.
+&lt;img src=&quot;/assets/2020-10-21-LiveCode-Privilege-Escalation-Vulnerability/2.png&quot; alt=&quot;&quot; height=&quot;100%&quot; width=&quot;100%&quot; style=&quot;display: block; margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;And below is a PoC exploitation of the vulnerable application to pop calc by simply copying calc.exe into the folder of the application and naming it cmd.exe.
+&lt;img src=&quot;/assets/2020-10-21-LiveCode-Privilege-Escalation-Vulnerability/3.png&quot; alt=&quot;&quot; height=&quot;100%&quot; width=&quot;100%&quot; style=&quot;display: block; margin-right: auto;&quot; /&gt;&lt;/p&gt;
+</description>
+        <pubDate>Wed, 21 Oct 2020 00:00:00 +0000</pubDate>
+        <link>//posts/LiveCode-Privilege-Escalation-Vulnerability/</link>
+        <link href="/posts/LiveCode-Privilege-Escalation-Vulnerability/"/>
+        <guid isPermaLink="true">/posts/LiveCode-Privilege-Escalation-Vulnerability/</guid>
+      </item>
+    
+      <item>
+        <title>Week 7&amp;#58; Plant Food</title>
+        <description>&lt;h2 id=&quot;transplanting&quot;&gt;&lt;a href=&quot;#header-1&quot;&gt;&lt;/a&gt;Transplanting!&lt;/h2&gt;
+&lt;p&gt;This week I transplanted my bell pepper and basil seedlings. The bell pepper seedling’s roots were starting to stick out of the peat pellet, so I knew it was time to move to the main garden. The basil seedlings probably could’ve stayed inside for a few more days, but I think they’ll be fine (knock on wood). I placed them in one of the corners of the garden, about 12 inches away from each other, making sure to water them thoroughly once transplanted. Below is a picture of my transplanted seedlings.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2020-10-17-Week-7/1.png&quot; alt=&quot;&quot; height=&quot;50%&quot; width=&quot;50%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;eat-eat-eat&quot;&gt;&lt;a href=&quot;#header-2&quot;&gt;&lt;/a&gt;Eat, Eat, Eat&lt;/h2&gt;
+&lt;p&gt;This week I also fertilized my plants, spreading about 1/4 teaspoon of fertilizer around each of my plants. I added more fertilizer than I was expecting, but that was the recommended amount, so we’ll see what happens. Based on things I’ve seen online (and other media in general), I thought only added a very very small amount of fertilizer would do the trick, and that adding too much could cause serious damage to your plants. Either way, I hope I put just the right amount. Below is a picture of my fertilized plants.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/2020-10-17-Week-7/2.png&quot; alt=&quot;&quot; height=&quot;50%&quot; width=&quot;50%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;other-plant-news&quot;&gt;&lt;a href=&quot;#header-3&quot;&gt;&lt;/a&gt;Other Plant News&lt;/h2&gt;
+&lt;p&gt;In other news, my pole beans seem to be dominating the garden, growing faster than any other plant. So much so, in fact, that its neighboring sunflowers seem to be suffering from lack of sunlight due to the large amount of shade the pole beans cast. I’ve been moving the sunflowers to the sunlight more and more often, so we’ll have to wait and see.&lt;/p&gt;
+</description>
+        <pubDate>Sat, 17 Oct 2020 00:00:00 +0000</pubDate>
+        <link>//posts/Week-7/</link>
+        <link href="/posts/Week-7/"/>
+        <guid isPermaLink="true">/posts/Week-7/</guid>
+      </item>
+    
+      <item>
         <title>Week 6&amp;#58; Pinch</title>
         <description>&lt;h2 id=&quot;casualty&quot;&gt;&lt;a href=&quot;#header-1&quot;&gt;&lt;/a&gt;Casualty&lt;/h2&gt;
 &lt;p&gt;One of my bell pepper seedlings has unfortunately suffered a casualty. While on the window sill, the blinds fell directly onto my germination station, cutting one of the bell pepper seedlings in half. All that remains is the stem. I’ve left it there and have continued to water it in hopes that it may still survive. RIP for now, bell pepper seedling. Forever in our hearts.&lt;/p&gt;
@@ -31,33 +122,6 @@
         <link>//posts/Week-6/</link>
         <link href="/posts/Week-6/"/>
         <guid isPermaLink="true">/posts/Week-6/</guid>
-      </item>
-    
-      <item>
-        <title>CVE-2020-26894 Privilege Escalation Vulnerability in Faulkner Press &quot;Wildlife Issues in the New Millennium&quot;</title>
-        <description>&lt;p&gt;While taking a Wildlife Issues course at my University, I discovered a high severity vulnerability in the course software our class was using that leads to a horizontal privilege escalation.&lt;/p&gt;
-
-&lt;p&gt;“Wildlife Issues in the New Millennium” v18.0.160 is vulnerable to an elevation of privilege vulnerability. During the startup, the application will execute attempt to execute “C:\Course Software Material 18.0.1.9\cmd.exe” if it exists. By default on Windows, low privileged users are able to create folders under the root level drives, including the C: drive. A low privileged user also has the ability to write to “C:\Course Software Material 18.0.1.9&quot;. Therefore, a low privileged user can create a malicious “cmd.exe” in that folder, which will be executed every time “Wildlife Issues in the New Millenium” starts by any user on the system. The malicious binary is executed in the background without the user’s knowledge. This would be an example of horizontal privilege escalation, as it will assume the privileges of which ever user starts up the software.&lt;/p&gt;
-
-&lt;p&gt;After contacting the vendor, the vulnerability has been patched in the newest version of the course software.&lt;/p&gt;
-
-&lt;p&gt;Mitre assigned &lt;a href=&quot;https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-26894&quot;&gt;CVE-2020-26894&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;steps-to-reproduce&quot;&gt;&lt;a href=&quot;#header-8&quot;&gt;&lt;/a&gt;Steps to Reproduce&lt;/h2&gt;
-
-&lt;p&gt;Execute the following command in a CMD window:&lt;/p&gt;
-
-&lt;p&gt;copy C:\Windows\System32\calc.exe “C:\Course Software Material 18.0.1.9\cmd.exe”&lt;/p&gt;
-
-&lt;p&gt;Now open “Wildlife Issues in the New Millennium” and calc will be popped with the same permissions as the user that started it.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/2020-10-06-Privilege-Escalation-Vulnerability-Faulkner-Press/1.png&quot; alt=&quot;&quot; height=&quot;100%&quot; width=&quot;100%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
-
-</description>
-        <pubDate>Tue, 06 Oct 2020 00:00:00 +0000</pubDate>
-        <link>//posts/Privilege-Escalation-Vulnerability-Faulkner-Press/</link>
-        <link href="/posts/Privilege-Escalation-Vulnerability-Faulkner-Press/"/>
-        <guid isPermaLink="true">/posts/Privilege-Escalation-Vulnerability-Faulkner-Press/</guid>
       </item>
     
       <item>
@@ -270,65 +334,6 @@
         <link>//posts/DNS-Exfiltration-Setup/</link>
         <link href="/posts/DNS-Exfiltration-Setup/"/>
         <guid isPermaLink="true">/posts/DNS-Exfiltration-Setup/</guid>
-      </item>
-    
-      <item>
-        <title>HackTheBox&amp;#58; Writeup</title>
-        <description>&lt;h3 id=&quot;box-type-linux&quot;&gt;&lt;a href=&quot;#header-3&quot;&gt;&lt;/a&gt;Box Type: Linux&lt;/h3&gt;
-&lt;h2 id=&quot;getting-user&quot;&gt;&lt;a href=&quot;#header-1&quot;&gt;&lt;/a&gt;Getting User&lt;/h2&gt;
-&lt;p&gt;Nmap scan showed ports 22 and 80 open.
-&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture.PNG&quot; alt=&quot;&quot; height=&quot;65%&quot; width=&quot;65%&quot; style=&quot;display: block; margin-right: auto;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Checking out the website shows a notification that some sort of DoS protection is running on the webserver, likely preventing any dictionary or brute force attacks, which means no dirb :(.
-&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture2.PNG&quot; alt=&quot;&quot; height=&quot;100%&quot; width=&quot;100%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;The Nmap scan did show a robots.txt, however:
-&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture3.PNG&quot; alt=&quot;&quot; height=&quot;60%&quot; width=&quot;60%px&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Navigating to /writeup shows a home page with writeups for other retired boxes:
-&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture4.PNG&quot; alt=&quot;&quot; height=&quot;90%&quot; width=&quot;90%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Using wappalyzer, it showed that this webpage was running “CMS Made Simple”. Wappalyzer is a useful extension (available for chrome and firefox) which shows what various services, languages, operating system the current website is running.
-&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture5.PNG&quot; alt=&quot;&quot; height=&quot;60%&quot; width=&quot;60%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;A bit of googling on “CMS Made Simple” showed an &lt;a href=&quot;https://www.exploit-db.com/exploits/46635&quot;&gt;SQL Injection vulnerability&lt;/a&gt;, specifically a blind, time-based injection. Essentially what this means is that we don’t recieve any direct output from the injection (blind), so we have to use sleep functionality (time-based) in SQL along with the substring function to determine the trueness of each guess. Through this, we are able to determine valuable information stored on the machine’s database, including the Password hash, the salt for the password, the username, and the email related to that user. With this, we can crack the hash using either hashcat or johntheripper and a common wordlist (rockyou.txt), but luckily the exploit found on exploitdb does this all for us. All we have to do is specify the url (http://10.10.10.138/writeup) and the wordlist to use.
-&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture6.PNG&quot; alt=&quot;&quot; height=&quot;60%&quot; width=&quot;60%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;We now have the username and password for the user “jkr”. We can SSH in and get the user.txt flag.
-&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture7.PNG&quot; alt=&quot;&quot; height=&quot;75%&quot; width=&quot;75%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;getting-root&quot;&gt;&lt;a href=&quot;#header-2&quot;&gt;&lt;/a&gt;Getting Root&lt;/h2&gt;
-
-&lt;p&gt;A common script I like to run on any linux box is “pspy”, which shows processes and commands being run in real time. This is useful to see if anything weird is being triggered by doing certain tasks. I used scp to transfer the pspy script over and ran it in one tab. I then opened another SSH connection in another tab to start hopefully triggering some events. Luckily, it was quite easy to find the right event to trigger, since actually SSHing into the box triggered some interesting commands.
-&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture8.PNG&quot; alt=&quot;&quot; height=&quot;100%&quot; width=&quot;100%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;It’s running a command called “run-parts” but it’s specifying it’s own $PATH environment variable. Well let’s check what groups our user is in and what permissions it has on some of these paths:
-&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture9.PNG&quot; alt=&quot;&quot; height=&quot;60%&quot; width=&quot;60%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;As you can see we are in the “staff” group and staff has write permissions on “/usr/local/sbin”, which is the first path specified in the $PATH variable that we saw. Because of this, we can create our own “run-parts” file, have it do whatever we want, place it in /usr/local/sbin and our file will be executed instead of the expected one. This is because Unix will go down the list of the $PATH environment variable until it hits a match. This is what my “run-parts” file looks like:
-&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture12.PNG&quot; alt=&quot;&quot; height=&quot;60%&quot; width=&quot;60%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Through a little troubleshooting of my own, I was able to figure out that the /root directory didn’t have a .ssh directory, which is why I had it make one in my run-parts file. I then copied by public SSH key over into the root’s authorized_keys file and bam, I can now SSH in as root:
-&lt;img src=&quot;/assets/2020-5-23-HTB-Writeup/Capture11.PNG&quot; alt=&quot;&quot; height=&quot;60%&quot; width=&quot;60%&quot; style=&quot;display: block;  margin-right: auto;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Overall, this is a really good beginner box, as it points out some common web attacks and enumerations (checking robots.txt and SQL Injection). The priv esc was also a good starter as it points out a simple, yet common vulnerability, which is allowing paths in $PATH to be writable by unauthorized users.&lt;/p&gt;
-
-&lt;p&gt;Hope you enjoyed and learned something :)&lt;/p&gt;
-</description>
-        <pubDate>Sat, 23 May 2020 00:00:00 +0000</pubDate>
-        <link>//posts/HTB-Writeup/</link>
-        <link href="/posts/HTB-Writeup/"/>
-        <guid isPermaLink="true">/posts/HTB-Writeup/</guid>
-      </item>
-    
-      <item>
-        <title>CTF Writeup</title>
-        <description>&lt;p&gt;This is a CTF Writeup&lt;/p&gt;
-</description>
-        <pubDate>Sat, 23 May 2020 00:00:00 +0000</pubDate>
-        <link>//posts/CTF-XSS/</link>
-        <link href="/posts/CTF-XSS/"/>
-        <guid isPermaLink="true">/posts/CTF-XSS/</guid>
       </item>
     
   </channel>

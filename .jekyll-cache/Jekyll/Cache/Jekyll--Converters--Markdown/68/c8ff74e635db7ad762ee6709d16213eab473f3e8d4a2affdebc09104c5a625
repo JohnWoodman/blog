@@ -1,0 +1,36 @@
+I"<h1 id="summary"><a href="#header-1"></a>Summary</h1>
+<p>LiveCode v9.6.1 for Windows is vulnerable to a horizontal privilege escalation vulnerability.</p>
+
+<h1 id="discovery"><a href="#header-2"></a>Discovery</h1>
+<p>While taking a Wildlife Issues course at my University, I discovered a high severity vulnerability in the course software our class was using that leads to a horizontal privilege escalation.</p>
+
+<p>At first, I thought the vulnerability was only in this course software, but looking into it deeper and with the help of one of the developers at faulkner press, we discovered that the vulnerability actually lied in the programming language/framework they were using: LiveCode.</p>
+
+<p>For those who aren’t familiar, <a href="https://livecode.com/">LiveCode</a> is a high-level scripting language belonging to the family of xTalk scripting languages along side HypderCard’s <a href="https://en.wikipedia.org/wiki/HyperTalk">HyperTalk</a>, allowing you to build cross-platform applications with relative ease.</p>
+
+<h1 id="vulnerability"><a href="#header-3"></a>Vulnerability</h1>
+<p>LiveCode has a function called “shell()” which, as you would expect, allows you to run shell commands and store its output. Most high-level programming languages that have a similar shell command function will use the environment variable %COMSPEC in Windows to determine the location of the shell to use to run the command, unless otherwise specified by the programmer. For Linux, it will usually use “/bin/sh”.</p>
+
+<p>LiveCode v9.6.1, however, does not reference %COMSPEC when attempting to locate cmd.exe to run the “shell()” function. This is dangerous, since it means it will follow the <a href="https://docs.microsoft.com/en-us/previous-versions//cc723564(v=technet.10)#command-search-sequence">command search sequence</a>. This will force the application to check the current directory of the application for cmd.exe before checking %PATH.</p>
+
+<p>This means that if the folder the application is running in is world writable (such as being installed in the root drive), then a low privileged user can create a malicious cmd.exe in that folder, which will be executed every time the application is started by any user on the system, and will assume the privileges of that user. This is known as horizontal privilege escalation.</p>
+
+<p>After contacting LiveCode, the vulnerability has been patched in LiveCode 9.6.2-rc-1.</p>
+
+<h1 id="workaround"><a href="#header-4"></a>Workaround</h1>
+<p>For those who need a workaround and can’t update, use the following command to tell the “shell()” function to use C:\Windows\System32\cmd.exe</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>set the shellCommand to "C:\Windows\System32\cmd.exe"
+</code></pre></div></div>
+
+<h1 id="proof-of-concept"><a href="#header-5"></a>Proof-of-Concept</h1>
+
+<p>The following is code that is vulnerable to cmd.exe hijacking:
+<img src="/assets/2020-10-21-LiveCode-Privilege-Escalation-Vulnerability/1.png" alt="" height="100%" width="100%" style="display: block; margin-right: auto;" /></p>
+
+<p>As you can see below, procmon shows that the vulnerable application is attempting to first get “cmd.exe” from the folder the application is running in before using C:\Windows\System32\cmd.exe.
+<img src="/assets/2020-10-21-LiveCode-Privilege-Escalation-Vulnerability/2.png" alt="" height="100%" width="100%" style="display: block; margin-right: auto;" /></p>
+
+<p>And below is a PoC exploitation of the vulnerable application to pop calc by simply copying calc.exe into the folder of the application and naming it cmd.exe.
+<img src="/assets/2020-10-21-LiveCode-Privilege-Escalation-Vulnerability/3.png" alt="" height="100%" width="100%" style="display: block; margin-right: auto;" /></p>
+:ET
