@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="">
+<meta name="description" content="Box Type: Linux Getting User Nmap scan showed ports 22 and 80 open. Checking out the website shows a notification that some sort of DoS protection is running on the webserver, likely preventing any dictionary or brute force attacks, which means no dirb :(. The Nmap scan did show a robots.txt, however: Navigating to /writeup shows a home page with writeups for other retired boxes: Using wappalyzer, it showed that this webpage was running &amp;ldquo;CMS Made Simple&amp;rdquo;." />
+<meta name="keywords" content="" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="https://john-woodman.com/writeups/hackthebox/htb-writeup/" />
+
+
+    <title>
+        
+            HackTheBox: Writeup :: John Woodman&#39;s Security Blog 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.393856bf2c430bb6c01d7af07c6fe966e7cce8073435cfbbc46e590bab7405ef.css">
+
+
+
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#252627">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <meta name="msapplication-TileColor" content="#252627">
+    <meta name="theme-color" content="#252627">
+
+
+
+<meta itemprop="name" content="HackTheBox: Writeup">
+<meta itemprop="description" content="Box Type: Linux Getting User Nmap scan showed ports 22 and 80 open. Checking out the website shows a notification that some sort of DoS protection is running on the webserver, likely preventing any dictionary or brute force attacks, which means no dirb :(. The Nmap scan did show a robots.txt, however: Navigating to /writeup shows a home page with writeups for other retired boxes: Using wappalyzer, it showed that this webpage was running &ldquo;CMS Made Simple&rdquo;.">
+
+<meta itemprop="wordCount" content="580">
+
+
+
+<meta itemprop="keywords" content="" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="HackTheBox: Writeup"/>
+<meta name="twitter:description" content="Box Type: Linux Getting User Nmap scan showed ports 22 and 80 open. Checking out the website shows a notification that some sort of DoS protection is running on the webserver, likely preventing any dictionary or brute force attacks, which means no dirb :(. The Nmap scan did show a robots.txt, however: Navigating to /writeup shows a home page with writeups for other retired boxes: Using wappalyzer, it showed that this webpage was running &ldquo;CMS Made Simple&rdquo;."/>
+
+
+
+    <meta property="og:title" content="HackTheBox: Writeup" />
+<meta property="og:description" content="Box Type: Linux Getting User Nmap scan showed ports 22 and 80 open. Checking out the website shows a notification that some sort of DoS protection is running on the webserver, likely preventing any dictionary or brute force attacks, which means no dirb :(. The Nmap scan did show a robots.txt, however: Navigating to /writeup shows a home page with writeups for other retired boxes: Using wappalyzer, it showed that this webpage was running &ldquo;CMS Made Simple&rdquo;." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://john-woodman.com/writeups/hackthebox/htb-writeup/" />
+<meta property="og:site_name" content="John Woodman&#39;s Security Blog" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">Security Blog</span>
+            <span class="logo__cursor" style=
+                  "
+                   
+                   ">
+            </span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="https://john-woodman.com/about">About</a></li><li><a href="https://john-woodman.com/gardening">Gardening</a></li><li><a href="https://john-woodman.com/research">Research</a></li><li><a href="https://john-woodman.com/writeups">Writeups</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+    <main class="post">
+
+        <div class="post-info">
+            
+            </p>
+        </div>
+
+        <article>
+            <h2 class="post-title"><a href="https://john-woodman.com/writeups/hackthebox/htb-writeup/">HackTheBox: Writeup</a></h2>
+
+            
+
+            
+
+            <div class="post-content">
+                <h3 id="header-3box-type-linux"><a href="#header-3"></a>Box Type: Linux</h3>
+<h2 id="header-1getting-user"><a href="#header-1"></a>Getting User</h2>
+<p>Nmap scan showed ports 22 and 80 open.
+<img src="/assets/2020-5-23-HTB-Writeup/Capture.PNG" alt=""></p>
+<p>Checking out the website shows a notification that some sort of DoS protection is running on the webserver, likely preventing any dictionary or brute force attacks, which means no dirb :(.
+<img src="/assets/2020-5-23-HTB-Writeup/Capture2.PNG" alt=""></p>
+<p>The Nmap scan did show a robots.txt, however:
+<img src="/assets/2020-5-23-HTB-Writeup/Capture3.PNG" alt=""></p>
+<p>Navigating to /writeup shows a home page with writeups for other retired boxes:
+<img src="/assets/2020-5-23-HTB-Writeup/Capture4.PNG" alt=""></p>
+<p>Using wappalyzer, it showed that this webpage was running &ldquo;CMS Made Simple&rdquo;. Wappalyzer is a useful extension (available for chrome and firefox) which shows what various services, languages, operating system the current website is running.
+<img src="/assets/2020-5-23-HTB-Writeup/Capture5.PNG" alt=""></p>
+<p>A bit of googling on &ldquo;CMS Made Simple&rdquo; showed an <a href="https://www.exploit-db.com/exploits/46635">SQL Injection vulnerability</a>, specifically a blind, time-based injection. Essentially what this means is that we don&rsquo;t recieve any direct output from the injection (blind), so we have to use sleep functionality (time-based) in SQL along with the substring function to determine the trueness of each guess. Through this, we are able to determine valuable information stored on the machine&rsquo;s database, including the Password hash, the salt for the password, the username, and the email related to that user. With this, we can crack the hash using either hashcat or johntheripper and a common wordlist (rockyou.txt), but luckily the exploit found on exploitdb does this all for us. All we have to do is specify the url (http://10.10.10.138/writeup) and the wordlist to use.
+<img src="/assets/2020-5-23-HTB-Writeup/Capture6.PNG" alt=""></p>
+<p>We now have the username and password for the user &ldquo;jkr&rdquo;. We can SSH in and get the user.txt flag.
+<img src="/assets/2020-5-23-HTB-Writeup/Capture7.PNG" alt=""></p>
+<h2 id="header-2getting-root"><a href="#header-2"></a>Getting Root</h2>
+<p>A common script I like to run on any linux box is &ldquo;pspy&rdquo;, which shows processes and commands being run in real time. This is useful to see if anything weird is being triggered by doing certain tasks. I used scp to transfer the pspy script over and ran it in one tab. I then opened another SSH connection in another tab to start hopefully triggering some events. Luckily, it was quite easy to find the right event to trigger, since actually SSHing into the box triggered some interesting commands.
+<img src="/assets/2020-5-23-HTB-Writeup/Capture8.PNG" alt=""></p>
+<p>It&rsquo;s running a command called &ldquo;run-parts&rdquo; but it&rsquo;s specifying it&rsquo;s own $PATH environment variable. Well let&rsquo;s check what groups our user is in and what permissions it has on some of these paths:
+<img src="/assets/2020-5-23-HTB-Writeup/Capture9.PNG" alt=""></p>
+<p>As you can see we are in the &ldquo;staff&rdquo; group and staff has write permissions on &ldquo;/usr/local/sbin&rdquo;, which is the first path specified in the $PATH variable that we saw. Because of this, we can create our own &ldquo;run-parts&rdquo; file, have it do whatever we want, place it in /usr/local/sbin and our file will be executed instead of the expected one. This is because Unix will go down the list of the $PATH environment variable until it hits a match. This is what my &ldquo;run-parts&rdquo; file looks like:
+<img src="/assets/2020-5-23-HTB-Writeup/Capture12.PNG" alt=""></p>
+<p>Through a little troubleshooting of my own, I was able to figure out that the /root directory didn&rsquo;t have a .ssh directory, which is why I had it make one in my run-parts file. I then copied by public SSH key over into the root&rsquo;s authorized_keys file and bam, I can now SSH in as root:
+<img src="/assets/2020-5-23-HTB-Writeup/Capture11.PNG" alt=""></p>
+<p>Overall, this is a really good beginner box, as it points out some common web attacks and enumerations (checking robots.txt and SQL Injection). The priv esc was also a good starter as it points out a simple, yet common vulnerability, which is allowing paths in $PATH to be writable by unauthorized users.</p>
+<p>Hope you enjoyed and learned something :)</p>
+
+            </div>
+        </article>
+
+        <hr />
+
+        <div class="post-info">
+            
+            
+  		</div>
+    </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2020</span>
+            
+            
+                <span><a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></span>
+            <span><a href="https://john-woodman.com/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>Powered by <a href="http://gohugo.io">Hugo</a></span>
+            <span>Made with &#10084; by <a href="https://github.com/rhazdon">Djordje Atlialp</a></span>
+          </div>
+    </div>
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+
+<script type="text/javascript" src="/bundle.min.dc716e9092c9820b77f96da294d0120aeeb189b5bcea9752309ebea27fd53bbe6b13cffb2aca8ecf32525647ceb7001f76091de4199ac5a3caa432c070247f5b.js" integrity="sha512-3HFukJLJggt3&#43;W2ilNASCu6xibW86pdSMJ6&#43;on/VO75rE8/7KsqOzzJSVkfOtwAfdgkd5BmaxaPKpDLAcCR/Ww=="></script>
+
+
+
+    </body>
+</html>

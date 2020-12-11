@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Research on John Woodman&#39;s Security Blog</title>
+    <link>https://john-woodman.com/research/</link>
+    <description>Recent content in Research on John Woodman&#39;s Security Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>&lt;a href=&#34;https://creativecommons.org/licenses/by-nc/4.0/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;CC BY-NC 4.0&lt;/a&gt;</copyright>
+    <lastBuildDate>Sun, 29 Nov 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://john-woodman.com/research/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>WADComs: Windows/Active Directory Interactive Cheat Sheet</title>
+      <link>https://john-woodman.com/research/wadcoms/</link>
+      <pubDate>Sun, 29 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://john-woodman.com/research/wadcoms/</guid>
+      <description>Whenever I&amp;rsquo;m hacking a Windows/AD environment, I spend a significant portion of my time looking at cheat sheets online or googling for various tools and commands that I forget (my memory kind of sucks). Not only that, but when I go to these cheat sheets, I&amp;rsquo;m always using control+F to find the exact command I&amp;rsquo;m looking for, often taking even more time and requiring me to visit multiple sites just to find the right command.</description>
+    </item>
+    
+    <item>
+      <title>CVE-2020-26894 Privilege Escalation Vulnerability in LiveCode v9.6.1 Programming Language</title>
+      <link>https://john-woodman.com/research/livecode-privilege-escalation-vulnerability/</link>
+      <pubDate>Wed, 21 Oct 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://john-woodman.com/research/livecode-privilege-escalation-vulnerability/</guid>
+      <description>Summary LiveCode v9.6.1 for Windows is vulnerable to a horizontal privilege escalation vulnerability.
+CVE Mitre Assigned: CVE-2020-26894
+Discovery While taking a Wildlife Issues course at my University, I discovered a high severity vulnerability in the course software our class was using that leads to a horizontal privilege escalation.
+At first, I thought the vulnerability was only in this course software, but looking into it deeper and with the help of one of the developers at faulkner press, we discovered that the vulnerability actually lied in the programming language/framework they were using: LiveCode.</description>
+    </item>
+    
+    <item>
+      <title>HackerTwitter: Simple UI Design for Twitter</title>
+      <link>https://john-woodman.com/research/hacker-twitter/</link>
+      <pubDate>Mon, 17 Aug 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://john-woodman.com/research/hacker-twitter/</guid>
+      <description>I don&amp;rsquo;t like how cluttered twitter&amp;rsquo;s feed is all the time and much prefer ycombinator&amp;rsquo;s Hacker News design. So I created a twitter UI that lets you view your timeline with a ycombinator type feel to it. I have a running instance you can sign into and if you don&amp;rsquo;t trust me, you can view the source code for it as well (links below). Enjoy :)
+HackerTwitter: https://twitter.john-woodman.com/
+GitHub Repo: https://github.</description>
+    </item>
+    
+    <item>
+      <title>Setting Up Your Own Malicious DNS Server For Data Exfiltration (Without a DNS Server)</title>
+      <link>https://john-woodman.com/research/dns-exfiltration-setup/</link>
+      <pubDate>Wed, 10 Jun 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://john-woodman.com/research/dns-exfiltration-setup/</guid>
+      <description>Data exfiltration is a key component of any red team/penetration testing assesment. Sometimes it&amp;rsquo;s as simple as scp&amp;rsquo;ing the sensitive data over an SSH connection. Other times, however, more sophisticated methods need to be used. One such common method is exfiltrating data through specially crafted URL requests to your public web server, such as placing the sensitive data as a GET parameter (www.evil.com?stolendata=password123). But what if firewall permissions are blocking any outbound HTTP traffic on the victim server?</description>
+    </item>
+    
+    <item>
+      <title>The Most Fun (and maybe impractical) Command and Control: SpotifyC2</title>
+      <link>https://john-woodman.com/research/spotifyc2/</link>
+      <pubDate>Sun, 22 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://john-woodman.com/research/spotifyc2/</guid>
+      <description>Command and Control is one of the most common techniques used by attackers to maintain persistent control over an infected computer, sending commands to be executed and receiving the output of those commands. There exists many different methods for implementing Command and Control, from using cloud services (AWS, Azure, etc.) to even using social media to send commands. One method we will be exploring is one I haven&amp;rsquo;t seen before (probably for a good reason): using Spotify to send commands and receive output.</description>
+    </item>
+    
+    <item>
+      <title>VBA Macro Remote Template Injection With Unlinking &amp; Self-Deletion</title>
+      <link>https://john-woodman.com/research/vba-macro-remote-template-injection/</link>
+      <pubDate>Thu, 28 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>https://john-woodman.com/research/vba-macro-remote-template-injection/</guid>
+      <description>One of the most common methods leveraged by attackers is the use of Malicious Word/Excel Documents sent over email. These malicious docs are embedded with macro VBA code that, when run, execute various tasks on the victim’s computer, usually resulting in RCE (Remote Code Execution) and/or data exfiltration.
+There are numerous techniques used on these malicious docs to bypass anti-virus detection (VBAStomping, obfuscation, etc.). One such method is Remote Template Injection.</description>
+    </item>
+    
+  </channel>
+</rss>

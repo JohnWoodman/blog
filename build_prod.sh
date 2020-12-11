@@ -1,4 +1,4 @@
 #!/bin/sh
-jekyll build
+hugo
 rm -rf /var/www/html/*
-rsync -av _site/ /var/www/html/
+rsync -av public/ /var/www/html/

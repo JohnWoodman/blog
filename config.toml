@@ -1,0 +1,91 @@
+baseurl      = "https://john-woodman.com/"
+title        = "Security Blog"
+languageCode = "en-us"
+theme        = "hello-friend-ng"
+paginate     = 10
+pluralizelisttitles = false
+
+[params]
+  dateform        = "Jan 2, 2006"
+  dateformShort   = "Jan 2"
+  dateformNum     = "2006-01-02"
+  dateformNumTime = "2006-01-02 15:04"
+
+  # Subtitle for home
+  homeSubtitle = "21 year old security researcher. I like breaking stuff."
+
+  # Set disableReadOtherPosts to true in order to hide the links to other posts.
+  disableReadOtherPosts = false
+
+  # Enable sharing buttons, if you linke
+  enableSharingButtons = true
+
+  [[params.social]]
+    name = "twitter"
+    url = "https://twitter.com/JohnWoodman15"
+
+  [[params.social]]
+    name = "email"
+    url = "mailto:john.woodman11@gmail.com"
+
+  [[params.social]]
+    name = "github"
+    url = "https://github.com/JohnWoodman"
+
+  [[params.social]]
+    name = "linkedin"
+    url = "https://linkedin.com/in/john-l-woodman"
+
+  [params.favicon.color]
+    mask = "#252627"
+    msapplication = "#252627"
+    theme = "#252627"
+
+  # Metadata mostly used in document's head
+  description = "My blog"
+  keywords = "homepage, blog, security, hacking, research, gardening, ctf, hackthebox"
+  images = [""]
+
+  # Default theme "light" or "dark"
+  defaultTheme = "dark"
+
+[taxonomies]
+    category = "blog"
+    tag      = "tags"
+    series   = "series"
+
+[languages]
+  [languages.en]
+    title = "John Woodman's Security Blog"
+    keywords = ""
+    copyright = '<a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>'
+    readOtherPosts = "Read other posts"
+
+    [languages.en.params.logo]
+      logoText = "Security Blog"
+      logoHomeLink = "/"
+    # or
+    #
+    # path = "/img/your-example-logo.svg"
+    # alt = "Your example logo alt text"
+
+  # And you can even create generic menu
+  [[menu.main]]
+    identifier = "research"
+    name       = "Research"
+    url        = "/research"
+
+  [[menu.main]]
+    identifier = "gardening"
+    name       = "Gardening"
+    url        = "/gardening"
+
+  [[menu.main]]
+    identifier = "about"
+    name       = "About"
+    url        = "/about"
+
+  [[menu.main]]
+    identifier = "writeups"
+    name       = "Writeups"
+    url        = "/writeups"

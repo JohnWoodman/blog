@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Writeups on John Woodman&#39;s Security Blog</title>
+    <link>https://john-woodman.com/writeups/</link>
+    <description>Recent content in Writeups on John Woodman&#39;s Security Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>&lt;a href=&#34;https://creativecommons.org/licenses/by-nc/4.0/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;CC BY-NC 4.0&lt;/a&gt;</copyright>
+    <lastBuildDate>Sat, 23 May 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://john-woodman.com/writeups/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>HackTheBox: Writeup</title>
+      <link>https://john-woodman.com/writeups/htb-writeup/</link>
+      <pubDate>Sat, 23 May 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://john-woodman.com/writeups/htb-writeup/</guid>
+      <description>Box Type: Linux Getting User Nmap scan showed ports 22 and 80 open. Checking out the website shows a notification that some sort of DoS protection is running on the webserver, likely preventing any dictionary or brute force attacks, which means no dirb :(. The Nmap scan did show a robots.txt, however: Navigating to /writeup shows a home page with writeups for other retired boxes: Using wappalyzer, it showed that this webpage was running &amp;ldquo;CMS Made Simple&amp;rdquo;.</description>
+    </item>
+    
+  </channel>
+</rss>

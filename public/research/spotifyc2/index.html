@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="">
+<meta name="description" content="Command and Control is one of the most common techniques used by attackers to maintain persistent control over an infected computer, sending commands to be executed and receiving the output of those commands. There exists many different methods for implementing Command and Control, from using cloud services (AWS, Azure, etc.) to even using social media to send commands. One method we will be exploring is one I haven&amp;rsquo;t seen before (probably for a good reason): using Spotify to send commands and receive output." />
+<meta name="keywords" content="" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="https://john-woodman.com/research/spotifyc2/" />
+
+
+    <title>
+        
+            The Most Fun (and maybe impractical) Command and Control: SpotifyC2 :: John Woodman&#39;s Security Blog 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.393856bf2c430bb6c01d7af07c6fe966e7cce8073435cfbbc46e590bab7405ef.css">
+
+
+
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#252627">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <meta name="msapplication-TileColor" content="#252627">
+    <meta name="theme-color" content="#252627">
+
+
+
+<meta itemprop="name" content="The Most Fun (and maybe impractical) Command and Control: SpotifyC2">
+<meta itemprop="description" content="Command and Control is one of the most common techniques used by attackers to maintain persistent control over an infected computer, sending commands to be executed and receiving the output of those commands. There exists many different methods for implementing Command and Control, from using cloud services (AWS, Azure, etc.) to even using social media to send commands. One method we will be exploring is one I haven&rsquo;t seen before (probably for a good reason): using Spotify to send commands and receive output.">
+<meta itemprop="datePublished" content="2019-12-22T00:00:00+00:00" />
+<meta itemprop="dateModified" content="2019-12-22T00:00:00+00:00" />
+<meta itemprop="wordCount" content="1342">
+
+
+
+<meta itemprop="keywords" content="" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="The Most Fun (and maybe impractical) Command and Control: SpotifyC2"/>
+<meta name="twitter:description" content="Command and Control is one of the most common techniques used by attackers to maintain persistent control over an infected computer, sending commands to be executed and receiving the output of those commands. There exists many different methods for implementing Command and Control, from using cloud services (AWS, Azure, etc.) to even using social media to send commands. One method we will be exploring is one I haven&rsquo;t seen before (probably for a good reason): using Spotify to send commands and receive output."/>
+
+
+
+    <meta property="og:title" content="The Most Fun (and maybe impractical) Command and Control: SpotifyC2" />
+<meta property="og:description" content="Command and Control is one of the most common techniques used by attackers to maintain persistent control over an infected computer, sending commands to be executed and receiving the output of those commands. There exists many different methods for implementing Command and Control, from using cloud services (AWS, Azure, etc.) to even using social media to send commands. One method we will be exploring is one I haven&rsquo;t seen before (probably for a good reason): using Spotify to send commands and receive output." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://john-woodman.com/research/spotifyc2/" />
+<meta property="article:published_time" content="2019-12-22T00:00:00+00:00" />
+<meta property="article:modified_time" content="2019-12-22T00:00:00+00:00" /><meta property="og:site_name" content="John Woodman&#39;s Security Blog" />
+
+
+
+
+
+
+    <meta property="article:published_time" content="2019-12-22 00:00:00 &#43;0000 UTC" />
+
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">Security Blog</span>
+            <span class="logo__cursor" style=
+                  "
+                   
+                   ">
+            </span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="https://john-woodman.com/about">About</a></li><li><a href="https://john-woodman.com/gardening">Gardening</a></li><li><a href="https://john-woodman.com/research">Research</a></li><li><a href="https://john-woodman.com/writeups">Writeups</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+    <main class="post">
+
+        <div class="post-info">
+            
+            </p>
+        </div>
+
+        <article>
+            <h2 class="post-title"><a href="https://john-woodman.com/research/spotifyc2/">The Most Fun (and maybe impractical) Command and Control: SpotifyC2</a></h2>
+
+            
+
+            
+
+            <div class="post-content">
+                <p>Command and Control is one of the most common techniques used by attackers to maintain persistent control over an infected computer, sending commands to be executed and receiving the output of those commands. There exists many different methods for implementing Command and Control, from using cloud services (AWS, Azure, etc.) to even using social media to send commands. One method we will be exploring is one I haven&rsquo;t seen before (probably for a good reason): using Spotify to send commands and receive output.</p>
+<h2 id="header-1introduction"><a href="#header-1"></a>Introduction</h2>
+<p>My good friend Terry Thibault (<a href="https://twitter.com/defnotprobro">@defnotprobro</a>) inspired this project, where he presented a talk at BSides Orlando, leveraging Twitter as a method for Command and Control.</p>
+<p>Command and Control essentially functions through a backdoor running on the infected machine, beaconing out every once in a while to retrieve a command or a set of commands to be executed. Commands sent to the beacon are usually encoded or hidden in some way (base64, hidden in an image, etc.) to make it harder for someone to detect. My method uses acrostics in Spotify playlist tracks to send commands, and retrieves output through the description box available in those playlists.</p>
+<p>I developed multiple scripts to form a proof-of-concept:</p>
+<p><a href="https://github.com/JohnWoodman/SpotifyC2">SpotifyC2</a></p>
+<p>I use Spotify&rsquo;s API for creating and editing the playlists. If you&rsquo;d like to use SpotifyC2 yourself, you&rsquo;ll need to place your own client ID, secret, and refresh token in the scripts.</p>
+<h2 id="header-2breakdown"><a href="#header-2"></a>Breakdown</h2>
+<p>Below is a breakdown of the Command and Control process using SpotifyC2.</p>
+<h3 id="header-3generating--sending-the-acrostic-command"><a href="#header-3"></a>Generating &amp; Sending The Acrostic Command</h3>
+<p>The command that the attacker wants to send to the infected machine is first checked for special and numeric characters and replaced with ascii characters, since most Spotify songs don&rsquo;t start with a special character or a number. The replacement method I used was fairly simple: SPACE character was &lsquo;space&rsquo;, / was &lsquo;fslash&rsquo;, \ was &lsquo;bslash&rsquo; and so on. Once the command is written in all ascii characters, an acrostic is generated based of a list of Spotify songs organized by genre (credit to <a href="https://github.com/plamere/enspex/tree/master/web/Acrostify">Acrostify</a> for the database of songs). Using my PoC, you can select which genre of music to generate the acrostic from, cause why not :).</p>
+<p>The acrostic generated is also randomized, so repeating characters will not have repeating songs. Once the acrostic is generated, a playlist is created with a name of your choice. For my PoC, the name of the playlist does not matter, but it could be used to organize commands, or even correspond to times at which the command should be run on the infected machine (might add that feature later). The playlist will contain all the songs from the acrostic. However, an issue I ran into was certain genres of the song database wouldn&rsquo;t generate the exact acrostic correctly, occasionally adding or replacing characters that shouldn&rsquo;t be there. I didn&rsquo;t test this on all genres (jazz and country were the ones I noticed the issue with), but the rock genre never gave me any issues, so I&rsquo;d reccommend that until I figure out what the issue is.</p>
+<p>Below shows a playlist created from the command &ldquo;cat /etc/passwd&rdquo;. You can see the beginning of the command hidden in the acrostic:</p>
+<p><img src="/assets/2019-12-22-SpotifyC2/1.png" alt=""></p>
+<p>Once the playlist is created, the playlist ID and command is placed in a file (playlist_id_list.txt) on your local machine, which is to be used later when retrieving the output from the infected machine.</p>
+<p>In my PoC, the script that does all this is <a href="https://github.com/JohnWoodman/SpotifyC2/blob/master/genAcrostic.py">genAcrostic.py</a></p>
+<h3 id="header-4the-backdoor"><a href="#header-4"></a>The Backdoor</h3>
+<p>This part describes everything that the infected machine is doing to receive and execute the command as well as send back the command output. The backdoor beacons out periodically (the less freqeunt, the more stealhty), making a request to the Spotify API to list all of its current playlists. Each playlist contains a command, hidden in an acrostic built from the songs in the playlist. The backdoor gets the first letter of each song, decodes the special characters and numbers as needed, and formulates a command to be executed.</p>
+<p>Initially, I was going to have the output of the command encoded in an acrostic just as I did when sending the command, but I realized that there were a lot more special characters and keys, which would make the acrostic overly and unnecessarily complex. While looking through the Spotify app to see if there were any other ways, I noticed that each playlist has a description box. I decided that it made much more sense to send the base64 encoded output through there.</p>
+<p>However, the description box has a size limit of 300 characters, too short for the majority of the base64 encoded output. A fix I came up with was to split the base64 encoded output into 300 character pieces, placing the first piece in the description of the original command&rsquo;s playlist. The subsequent 300 character pieces are then placed into newly created playlists until the entire output is used. In order for the attacker machine to re-assemble the base64 encoded output, the name of each of the newly created playlists are based off the playlist ID of original command&rsquo;s playlist, with an incrementing number added to the end.</p>
+<p>Below shows a playlist created by the backdoor. A piece of the base64 encoded output is embedded in the description, and the name of the playlist reflects the playlist ID of the original command acrsotic, with an incrementing number added as the suffix (the image shows the 29th playlist created for this output). On the left are the list of the other playlists created, each containing a piece of the output to be re-assembled and decoded:</p>
+<p><img src="/assets/2019-12-22-SpotifyC2/2.png" alt=""></p>
+<p>In my Poc, the script that does all this is <a href="https://github.com/JohnWoodman/SpotifyC2/blob/master/backdoor.py">backdoor.py</a></p>
+<h3 id="header-5retrieving-output"><a href="#header-5"></a>Retrieving Output</h3>
+<p>Retrieving the output from the command is fairly straight forward. A request is made to the Spotify API to retrieve a list of all the playlists, which now contain the newly created ones from the backdoor. The description is retrieved from each of the playlists, and based off the incrementing number at the end of each playlist ID, the base64 encoded text is re-assembled in the proper order, and is then decoded to output of the command. Since multiple commands can be sent to the backdoor, in order to correspond an output to a specific command, the file &ldquo;playlist_id_list.txt&rdquo; is used to relate a playlist ID with its command. Once all the command outputs are retrieved and decoded, the &ldquo;playlist_id_list.txt&rdquo; file is deleted, as well as the Spotify playlists themselves.</p>
+<p>As shown below, once this process is complete, the playlists associated with the command and its output is deleted:</p>
+<p><img src="/assets/2019-12-22-SpotifyC2/3.png" alt=""></p>
+<p>In my PoC, the script that does all this is <a href="https://github.com/JohnWoodman/SpotifyC2/blob/master/getOutput.py">getOutput.py</a></p>
+<h2 id="header-6conclusion"><a href="#header-6"></a>Conclusion</h2>
+<p>This method of Command and Control actually works quite well compared with other forms of social media C2. Commands are hidden in a unique way that may not be easily detected, and considering the vast number of playlists existing in Spotify, finding the C2 playlists would be quite a challenge for anyone looking for them. Some drawbacks to this method is the fact that Spotify never actually deletes a playlist, it technically only unfollows it. This isn&rsquo;t a huge issue, as finding the playlist after unfollowing it is extremely difficult, but it should be known that it isn&rsquo;t impossible. I suppose the main drawback is the fact that it probably makes more sense to use the other methods of C2 as they are likely more reliable and more private, such as gmail or Direct Messaging in other social media platforms. However, SpotifyC2 provides its own fun and unique ways of keeping commands hidden.</p>
+<p>I started this project firstly to learn more about Command and Control and the various methods used, and secondly to prove that this method could be done and that Spotify is a viable option for Command and Control, and I think I&rsquo;ve done just that. While it isn&rsquo;t the most practical, it certainly holds its own amongst the other unique methods of C2. Not to mention, its a lot of fun to think you can control someone&rsquo;s computer by sending We Will Rock You.</p>
+
+            </div>
+        </article>
+
+        <hr />
+
+        <div class="post-info">
+            
+            
+  		</div>
+    </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2020</span>
+            
+            
+                <span><a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></span>
+            <span><a href="https://john-woodman.com/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>Powered by <a href="http://gohugo.io">Hugo</a></span>
+            <span>Made with &#10084; by <a href="https://github.com/rhazdon">Djordje Atlialp</a></span>
+          </div>
+    </div>
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+
+<script type="text/javascript" src="/bundle.min.dc716e9092c9820b77f96da294d0120aeeb189b5bcea9752309ebea27fd53bbe6b13cffb2aca8ecf32525647ceb7001f76091de4199ac5a3caa432c070247f5b.js" integrity="sha512-3HFukJLJggt3&#43;W2ilNASCu6xibW86pdSMJ6&#43;on/VO75rE8/7KsqOzzJSVkfOtwAfdgkd5BmaxaPKpDLAcCR/Ww=="></script>
+
+
+
+    </body>
+</html>

